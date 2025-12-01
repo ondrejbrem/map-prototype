@@ -6,9 +6,9 @@
       label: "Digital Foundations",
       expertise: "A1-B1",
       description: "Baseline confidence with devices, storage, and local networks.",
-      x: 320,
-      y: 230,
-      radius: 320
+      x: 230,
+      y: 240,
+      radius: 260
     },
     {
       id: "area_connected_world",
@@ -16,9 +16,9 @@
       label: "Connected World",
       expertise: "A2-B2",
       description: "Communicating, creating, and staying safe in public online spaces.",
-      x: 900,
-      y: 250,
-      radius: 330
+      x: 980,
+      y: 240,
+      radius: 260
     },
     {
       id: "area_computation",
@@ -27,8 +27,8 @@
       expertise: "A2-C1",
       description: "Programming, data work, automation, and critical AI use.",
       x: 620,
-      y: 600,
-      radius: 350
+      y: 620,
+      radius: 260
     },
     {
       id: "topic_device_basics",
@@ -37,9 +37,9 @@
       expertise: "A1-A2",
       lessons: "3 goals",
       description: "Name hardware, navigate the OS, and build ergonomic habits.",
-      x: 230,
-      y: 190,
-      radius: 150
+      x: 180,
+      y: 180,
+      radius: 120
     },
     {
       id: "topic_network_basics",
@@ -48,9 +48,9 @@
       expertise: "A2-B1",
       lessons: "3 goals",
       description: "Trace how packets move, compare latency, and vet connectivity.",
-      x: 430,
-      y: 170,
-      radius: 150
+      x: 300,
+      y: 140,
+      radius: 120
     },
     {
       id: "topic_productivity",
@@ -59,9 +59,9 @@
       expertise: "A2-B1",
       lessons: "3 goals",
       description: "Organize files, back up assets, and install software intentionally.",
-      x: 320,
+      x: 220,
       y: 320,
-      radius: 140
+      radius: 110
     },
     {
       id: "topic_communication",
@@ -70,9 +70,9 @@
       expertise: "A2-B1",
       lessons: "4 goals",
       description: "Pick the right channel, compose clearly, and facilitate teams.",
-      x: 820,
-      y: 200,
-      radius: 160
+      x: 880,
+      y: 180,
+      radius: 120
     },
     {
       id: "topic_web_literacy",
@@ -81,9 +81,9 @@
       expertise: "A2-B2",
       lessons: "4 goals",
       description: "Structure semantic HTML, style accessibly, and publish responsibly.",
-      x: 1020,
+      x: 1040,
       y: 210,
-      radius: 170
+      radius: 120
     },
     {
       id: "topic_security_habits",
@@ -92,9 +92,9 @@
       expertise: "A2-B2",
       lessons: "4 goals",
       description: "Protect credentials, spot phishing, and set privacy defaults.",
-      x: 780,
-      y: 340,
-      radius: 150
+      x: 900,
+      y: 320,
+      radius: 120
     },
     {
       id: "topic_programming",
@@ -103,9 +103,9 @@
       expertise: "A2-B2",
       lessons: "4 goals",
       description: "Build and debug small programs with state, flow, and tests.",
-      x: 540,
+      x: 520,
       y: 540,
-      radius: 170
+      radius: 130
     },
     {
       id: "topic_data_literacy",
@@ -115,8 +115,8 @@
       lessons: "3 goals",
       description: "Collect, clean, query, and interpret datasets for decisions.",
       x: 700,
-      y: 520,
-      radius: 170
+      y: 540,
+      radius: 130
     },
     {
       id: "topic_automation_ai",
@@ -125,9 +125,9 @@
       expertise: "B2-C1",
       lessons: "3 goals",
       description: "Draft prompts, script repetitive work, and critique model bias.",
-      x: 640,
-      y: 680,
-      radius: 160
+      x: 620,
+      y: 700,
+      radius: 130
     },
     {
       id: "goal_use_keyboard",

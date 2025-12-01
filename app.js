@@ -36,6 +36,8 @@
   const edges = conceptData.edges ?? [];
   const edgesById = new Map(edges.map((edge) => [edge.id, edge]));
 
+  layoutNodes();
+
   const adjacency = new Map();
   edges.forEach((edge) => {
     registerAdjacency(edge.source, edge);
@@ -647,5 +649,134 @@
     const isAreaTopic = pair.has("area") && pair.has("topic");
     const isTopicGoal = pair.has("topic") && pair.has("goal");
     return isAreaTopic || isTopicGoal;
+  }
+
+  function layoutNodes() {
+    const goalPrimaryTopic = new Map();
+    const topicGoals = new Map();
+    const goalTerms = new Map();
+    const goalActivities = new Map();
+
+    edges.forEach((edge) => {
+      const source = nodesById.get(edge.source);
+      const target = nodesById.get(edge.target);
+      if (!source || !target) {
+        return;
+      }
+      if (edge.relation === "contains") {
+        if (source.type === "topic" && target.type === "goal") {
+          if (!goalPrimaryTopic.has(target.id)) {
+            goalPrimaryTopic.set(target.id, source.id);
+          }
+          if (!topicGoals.has(source.id)) {
+            topicGoals.set(source.id, []);
+          }
+          topicGoals.get(source.id).push(target.id);
+        } else if (target.type === "topic" && source.type === "goal") {
+          if (!goalPrimaryTopic.has(source.id)) {
+            goalPrimaryTopic.set(source.id, target.id);
+          }
+          if (!topicGoals.has(target.id)) {
+            topicGoals.set(target.id, []);
+          }
+          topicGoals.get(target.id).push(source.id);
+        }
+      } else if (edge.relation === "relates") {
+        const goalId = source.type === "goal" ? source.id : target.type === "goal" ? target.id : null;
+        const termId = source.type === "term" ? source.id : target.type === "term" ? target.id : null;
+        if (goalId && termId) {
+          if (!goalTerms.has(goalId)) {
+            goalTerms.set(goalId, []);
+          }
+          if (!goalTerms.get(goalId).includes(termId)) {
+            goalTerms.get(goalId).push(termId);
+          }
+        }
+      } else if (edge.relation === "validates") {
+        const goalId = source.type === "goal" ? source.id : target.type === "goal" ? target.id : null;
+        const activityId = source.type === "activity" ? source.id : target.type === "activity" ? target.id : null;
+        if (goalId && activityId) {
+          if (!goalActivities.has(goalId)) {
+            goalActivities.set(goalId, []);
+          }
+          if (!goalActivities.get(goalId).includes(activityId)) {
+            goalActivities.get(goalId).push(activityId);
+          }
+        }
+      }
+    });
+
+    const placedGoals = new Set();
+
+    topicGoals.forEach((goalIds, topicId) => {
+      const topic = nodesById.get(topicId);
+      if (!topic || goalIds.length === 0) {
+        return;
+      }
+      const radius = Math.max(110, (topic.radius || 110) + 10);
+      const startAngle = -Math.PI / 2;
+      const step = (2 * Math.PI) / goalIds.length;
+      goalIds.forEach((goalId, index) => {
+        if (placedGoals.has(goalId)) {
+          return;
+        }
+        const angle = startAngle + index * step;
+        const goal = nodesById.get(goalId);
+        if (!goal) {
+          return;
+        }
+        goal.x = topic.x + radius * Math.cos(angle);
+        goal.y = topic.y + radius * Math.sin(angle);
+        placedGoals.add(goalId);
+      });
+    });
+
+    const placedNodes = new Set();
+
+    goalTerms.forEach((termIds, goalId) => {
+      const goal = nodesById.get(goalId);
+      if (!goal || termIds.length === 0) {
+        return;
+      }
+      const radius = 70;
+      const startAngle = Math.PI / 4;
+      const step = (Math.PI * 1.5) / Math.max(termIds.length, 1);
+      termIds.forEach((termId, index) => {
+        if (placedNodes.has(termId)) {
+          return;
+        }
+        const angle = startAngle + index * step;
+        const term = nodesById.get(termId);
+        if (!term) {
+          return;
+        }
+        term.x = goal.x + radius * Math.cos(angle);
+        term.y = goal.y + radius * Math.sin(angle);
+        placedNodes.add(termId);
+      });
+    });
+
+    goalActivities.forEach((activityIds, goalId) => {
+      const goal = nodesById.get(goalId);
+      if (!goal || activityIds.length === 0) {
+        return;
+      }
+      const radius = 110;
+      const startAngle = -Math.PI / 6;
+      const step = (Math.PI * 1.2) / Math.max(activityIds.length, 1);
+      activityIds.forEach((activityId, index) => {
+        if (placedNodes.has(activityId)) {
+          return;
+        }
+        const angle = startAngle + index * step;
+        const activity = nodesById.get(activityId);
+        if (!activity) {
+          return;
+        }
+        activity.x = goal.x + radius * Math.cos(angle);
+        activity.y = goal.y + radius * Math.sin(angle);
+        placedNodes.add(activityId);
+      });
+    });
   }
 })();
