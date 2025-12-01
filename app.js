@@ -670,8 +670,8 @@
   }
 
   function layoutNodes() {
-    const goalPrimaryTopic = new Map();
     const topicGoals = new Map();
+    const goalPrimaryTopic = new Map();
     const goalTerms = new Map();
     const goalActivities = new Map();
 
@@ -681,24 +681,10 @@
       if (!source || !target) {
         return;
       }
-      if (edge.relation === "contains") {
-        if (source.type === "topic" && target.type === "goal") {
-          if (!goalPrimaryTopic.has(target.id)) {
-            goalPrimaryTopic.set(target.id, source.id);
-          }
-          if (!topicGoals.has(source.id)) {
-            topicGoals.set(source.id, []);
-          }
-          topicGoals.get(source.id).push(target.id);
-        } else if (target.type === "topic" && source.type === "goal") {
-          if (!goalPrimaryTopic.has(source.id)) {
-            goalPrimaryTopic.set(source.id, target.id);
-          }
-          if (!topicGoals.has(target.id)) {
-            topicGoals.set(target.id, []);
-          }
-          topicGoals.get(target.id).push(source.id);
-        }
+      if (edge.relation === "contains" && source.type === "topic" && target.type === "goal") {
+        registerGoalToTopic(target.id, source.id);
+      } else if (edge.relation === "contains" && target.type === "topic" && source.type === "goal") {
+        registerGoalToTopic(source.id, target.id);
       } else if (edge.relation === "relates") {
         const goalId = source.type === "goal" ? source.id : target.type === "goal" ? target.id : null;
         const termId = source.type === "term" ? source.id : target.type === "term" ? target.id : null;
@@ -706,9 +692,7 @@
           if (!goalTerms.has(goalId)) {
             goalTerms.set(goalId, []);
           }
-          if (!goalTerms.get(goalId).includes(termId)) {
-            goalTerms.get(goalId).push(termId);
-          }
+          goalTerms.get(goalId).push(termId);
         }
       } else if (edge.relation === "validates") {
         const goalId = source.type === "goal" ? source.id : target.type === "goal" ? target.id : null;
@@ -717,84 +701,83 @@
           if (!goalActivities.has(goalId)) {
             goalActivities.set(goalId, []);
           }
-          if (!goalActivities.get(goalId).includes(activityId)) {
-            goalActivities.get(goalId).push(activityId);
-          }
+          goalActivities.get(goalId).push(activityId);
         }
       }
     });
 
-    const placedGoals = new Set();
+    function registerGoalToTopic(goalId, topicId) {
+      if (!goalPrimaryTopic.has(goalId)) {
+        goalPrimaryTopic.set(goalId, topicId);
+      }
+      if (!topicGoals.has(topicId)) {
+        topicGoals.set(topicId, []);
+      }
+      if (!topicGoals.get(topicId).includes(goalId)) {
+        topicGoals.get(topicId).push(goalId);
+      }
+    }
 
+    const goalAngles = new Map();
     topicGoals.forEach((goalIds, topicId) => {
       const topic = nodesById.get(topicId);
       if (!topic || goalIds.length === 0) {
         return;
       }
-      const radius = Math.max(110, (topic.radius || 110) + 10);
+      const goalRadius = Math.max(60, (topic.radius || 110) - 35);
       const startAngle = -Math.PI / 2;
       const step = (2 * Math.PI) / goalIds.length;
       goalIds.forEach((goalId, index) => {
-        if (placedGoals.has(goalId)) {
-          return;
-        }
         const angle = startAngle + index * step;
         const goal = nodesById.get(goalId);
         if (!goal) {
           return;
         }
-        goal.x = topic.x + radius * Math.cos(angle);
-        goal.y = topic.y + radius * Math.sin(angle);
-        placedGoals.add(goalId);
+        goal.x = topic.x + goalRadius * Math.cos(angle);
+        goal.y = topic.y + goalRadius * Math.sin(angle);
+        goalAngles.set(goalId, angle);
       });
     });
 
-    const placedNodes = new Set();
-
     goalTerms.forEach((termIds, goalId) => {
-      const goal = nodesById.get(goalId);
-      if (!goal || termIds.length === 0) {
+      const angle = goalAngles.get(goalId);
+      const topicId = goalPrimaryTopic.get(goalId);
+      const topic = topicId ? nodesById.get(topicId) : null;
+      if (!topic || angle == null) {
         return;
       }
-      const radius = 70;
-      const startAngle = Math.PI / 4;
-      const step = (Math.PI * 1.5) / Math.max(termIds.length, 1);
+      const baseRadius = (topic.radius || 110) + 35;
       termIds.forEach((termId, index) => {
-        if (placedNodes.has(termId)) {
-          return;
-        }
-        const angle = startAngle + index * step;
         const term = nodesById.get(termId);
         if (!term) {
           return;
         }
-        term.x = goal.x + radius * Math.cos(angle);
-        term.y = goal.y + radius * Math.sin(angle);
-        placedNodes.add(termId);
+        const offsetAngle = angle + (index % 2 === 0 ? 1 : -1) * 0.25 * Math.ceil(index / 2);
+        const radius = baseRadius + index * 22;
+        term.x = topic.x + radius * Math.cos(offsetAngle);
+        term.y = topic.y + radius * Math.sin(offsetAngle);
       });
     });
 
     goalActivities.forEach((activityIds, goalId) => {
-      const goal = nodesById.get(goalId);
-      if (!goal || activityIds.length === 0) {
+      const angle = goalAngles.get(goalId);
+      const topicId = goalPrimaryTopic.get(goalId);
+      const topic = topicId ? nodesById.get(topicId) : null;
+      if (!topic || angle == null) {
         return;
       }
-      const radius = 110;
-      const startAngle = -Math.PI / 6;
-      const step = (Math.PI * 1.2) / Math.max(activityIds.length, 1);
+      const baseRadius = (topic.radius || 110) + 95;
       activityIds.forEach((activityId, index) => {
-        if (placedNodes.has(activityId)) {
-          return;
-        }
-        const angle = startAngle + index * step;
         const activity = nodesById.get(activityId);
         if (!activity) {
           return;
         }
-        activity.x = goal.x + radius * Math.cos(angle);
-        activity.y = goal.y + radius * Math.sin(angle);
-        placedNodes.add(activityId);
+        const offsetAngle = angle + ((index % 2 === 0 ? 1 : -1) * 0.35 * Math.ceil(index / 2));
+        const radius = baseRadius + index * 30;
+        activity.x = topic.x + radius * Math.cos(offsetAngle);
+        activity.y = topic.y + radius * Math.sin(offsetAngle);
       });
     });
   }
+
 })();
