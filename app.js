@@ -21,6 +21,7 @@
     panSession: null,
     selectedNode: null
   };
+  let viewBoxNeedsUpdate = false;
 
   const filters = {
     types: new Set(["area", "topic", "goal", "activity", "term"]),
@@ -327,9 +328,10 @@
     });
 
     svg.addEventListener("pointerdown", (event) => {
-      if (event.button !== 0 || event.target.closest(".node")) {
+      if (event.button !== 2) {
         return;
       }
+      event.preventDefault();
       state.panSession = {
         pointerId: event.pointerId,
         origin: mapFromClient(event),
@@ -342,13 +344,14 @@
       if (!state.panSession || state.panSession.pointerId !== event.pointerId) {
         return;
       }
+      event.preventDefault();
       const current = mapFromClient(event);
       const dx = current.x - state.panSession.origin.x;
       const dy = current.y - state.panSession.origin.y;
       state.viewBox.x = state.panSession.start.x - dx;
       state.viewBox.y = state.panSession.start.y - dy;
       clampViewBox();
-      applyViewBox();
+      requestViewBoxRender();
     });
 
     ["pointerup", "pointercancel", "pointerleave"].forEach((type) => {
@@ -358,6 +361,10 @@
           state.panSession = null;
         }
       });
+    });
+
+    svg.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
     });
 
     window.addEventListener("keydown", (event) => {
@@ -390,7 +397,7 @@
     state.viewBox.width = newWidth;
     state.viewBox.height = newHeight;
     clampViewBox();
-    applyViewBox();
+    requestViewBoxRender();
   }
 
   function clampViewBox() {
@@ -409,6 +416,17 @@
     if (zoomReadout) {
       zoomReadout.textContent = `${zoomPercent}%`;
     }
+  }
+
+  function requestViewBoxRender() {
+    if (viewBoxNeedsUpdate) {
+      return;
+    }
+    viewBoxNeedsUpdate = true;
+    requestAnimationFrame(() => {
+      viewBoxNeedsUpdate = false;
+      applyViewBox();
+    });
   }
 
   function updateDetailLevel(width) {
