@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -12,10 +12,14 @@
         <p class="label">Experimental Prototype</p>
         <h1>Concept Learning Map</h1>
         <p class="subtitle">
-          Explore how topics, goals, terms, and activities connect across the informatics curriculum.
+          Explore how areas cluster into topics, atomic goals, terms, and activity types across the informatics curriculum.
         </p>
       </div>
       <div class="legend">
+        <div class="legend__item">
+          <span class="legend__dot legend__dot--area"></span>
+          <span>Area grouping</span>
+        </div>
         <div class="legend__item">
           <span class="legend__dot legend__dot--topic"></span>
           <span>Topic cluster</span>
@@ -47,7 +51,7 @@
       <div class="control-group control-group--zoom">
         <label>Zoom</label>
         <div class="zoom-buttons">
-          <button data-zoom="out" title="Zoom out">−</button>
+          <button data-zoom="out" title="Zoom out">-</button>
           <button data-zoom="in" title="Zoom in">+</button>
           <span id="zoom-readout">100%</span>
         </div>
@@ -70,10 +74,10 @@
       <aside class="info-panel" id="info-panel">
         <div class="info-panel__empty">
           <h2>Select a node</h2>
-          <p>Highlight a topic, goal, term, or activity to see why it matters and how it connects.</p>
+          <p>Highlight an area, topic, goal, term, or activity to see why it matters and how it connects.</p>
           <ul>
-            <li>Zoom out to focus on broader topics.</li>
-            <li>Zoom in to surface activities and assessment ideas.</li>
+            <li>Zoom out to spot areas and overlapping topics.</li>
+            <li>Zoom in to surface atomic goals, activities, and terms.</li>
             <li>Use the chips above to filter by node type or expertise level.</li>
           </ul>
         </div>

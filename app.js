@@ -23,7 +23,7 @@
   };
 
   const filters = {
-    types: new Set(["topic", "goal", "activity", "term"]),
+    types: new Set(["area", "topic", "goal", "activity", "term"]),
     expertise: new Set()
   };
 
@@ -67,6 +67,7 @@
     levelOptions.forEach((level) => filters.expertise.add(level));
 
     createChips(typeFilterEl, [
+      { key: "area", label: "Areas" },
       { key: "topic", label: "Topics" },
       { key: "goal", label: "Goals" },
       { key: "activity", label: "Activities" },
@@ -106,6 +107,8 @@
   }
 
   function renderGraph() {
+    const areaLayer = document.createElementNS(ns, "g");
+    areaLayer.classList.add("layer", "layer-areas");
     const topicLayer = document.createElementNS(ns, "g");
     topicLayer.classList.add("layer", "layer-topics");
     const linkLayer = document.createElementNS(ns, "g");
@@ -113,9 +116,37 @@
     const nodeLayer = document.createElementNS(ns, "g");
     nodeLayer.classList.add("layer", "layer-nodes");
 
+    svg.appendChild(areaLayer);
     svg.appendChild(topicLayer);
     svg.appendChild(linkLayer);
     svg.appendChild(nodeLayer);
+
+    nodes.forEach((node) => {
+      if (node.type !== "area") {
+        return;
+      }
+      const group = document.createElementNS(ns, "g");
+      group.classList.add("node", "node--area", "detail-wide");
+      group.dataset.id = node.id;
+
+      const circle = document.createElementNS(ns, "circle");
+      circle.setAttribute("cx", node.x);
+      circle.setAttribute("cy", node.y);
+      circle.setAttribute("r", node.radius || 260);
+      circle.setAttribute("filter", "url(#soft-shadow)");
+      group.appendChild(circle);
+
+      const label = document.createElementNS(ns, "text");
+      label.classList.add("area-label");
+      label.setAttribute("x", node.x);
+      label.setAttribute("y", node.y - (node.radius || 260) + 24);
+      label.textContent = node.label;
+      group.appendChild(label);
+
+      attachNodeHandlers(group, node.id);
+      areaLayer.appendChild(group);
+      nodeElements.set(node.id, group);
+    });
 
     nodes.forEach((node) => {
       if (node.type === "topic") {
@@ -157,6 +188,9 @@
       if (!source || !target) {
         return;
       }
+      if (isStructuralEdge(source, target, edge.relation)) {
+        return;
+      }
       const path = document.createElementNS(ns, "path");
       path.setAttribute("d", `M ${source.x} ${source.y} L ${target.x} ${target.y}`);
       path.dataset.id = edge.id;
@@ -169,7 +203,7 @@
     });
 
     nodes.forEach((node) => {
-      if (node.type === "topic") {
+      if (node.type === "topic" || node.type === "area") {
         return;
       }
       const group = document.createElementNS(ns, "g");
@@ -458,10 +492,10 @@
       wrapper.className = "info-panel__empty";
       wrapper.innerHTML = `
         <h2>Select a node</h2>
-        <p>Highlight a topic, goal, term, or activity to see how it supports the path to mastery.</p>
+        <p>Highlight an area, topic, goal, term, or activity to see how it supports the path to mastery.</p>
         <ul>
-          <li>Zoom out to compare overlapping topics.</li>
-          <li>Zoom in for activities that validate learning goals.</li>
+          <li>Zoom out to compare overlapping areas and topics.</li>
+          <li>Zoom in for atomic goals, activities, and key terms.</li>
           <li>Filters help surface the right expertise band.</li>
         </ul>
       `;
@@ -488,6 +522,9 @@
     }
     if (node.lessons) {
       metaParts.push(node.lessons);
+    }
+    if (node.activityType) {
+      metaParts.push(`${capitalize(node.activityType)} activity`);
     }
     if (metaParts.length) {
       meta.textContent = metaParts.join(" | ");
@@ -533,10 +570,10 @@
       return node.type === "activity" ? "Validates" : other.type === "activity" ? "Validated by" : "Connected";
     }
     if (relation === "contains") {
-      if (node.type === "topic" && other.type !== "topic") {
+      if ((node.type === "area" && other.type !== "area") || (node.type === "topic" && other.type !== "topic")) {
         return "Includes";
       }
-      if (other.type === "topic" && node.type !== "topic") {
+      if ((other.type === "area" && node.type !== "area") || (other.type === "topic" && node.type !== "topic")) {
         return "Part of";
       }
     }
@@ -596,5 +633,19 @@
 
   function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
+  }
+
+  function capitalize(value = "") {
+    return value.charAt(0).toUpperCase() + value.slice(1);
+  }
+
+  function isStructuralEdge(source, target, relation) {
+    if (relation !== "contains") {
+      return false;
+    }
+    const pair = new Set([source.type, target.type]);
+    const isAreaTopic = pair.has("area") && pair.has("topic");
+    const isTopicGoal = pair.has("topic") && pair.has("goal");
+    return isAreaTopic || isTopicGoal;
   }
 })();

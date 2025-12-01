@@ -86,6 +86,10 @@ p {
   color: #f8b44e;
 }
 
+.legend__dot--area {
+  color: #8ac8ff;
+}
+
 .legend__dot--goal {
   color: #7ee0ff;
 }
@@ -292,9 +296,23 @@ p {
   stroke-width: 2;
 }
 
+.layer-areas circle {
+  fill: rgba(138, 200, 255, 0.06);
+  stroke: rgba(138, 200, 255, 0.35);
+  stroke-width: 2;
+}
+
 .topic-label {
   font-size: 1rem;
   fill: rgba(255, 255, 255, 0.9);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.area-label {
+  font-size: 1rem;
+  font-weight: 600;
+  fill: rgba(255, 255, 255, 0.7);
   text-anchor: middle;
   pointer-events: none;
 }
@@ -346,6 +364,11 @@ p {
 .node--term polygon {
   fill: rgba(215, 255, 126, 0.15);
   stroke: rgba(215, 255, 126, 0.8);
+}
+
+.node--area circle {
+  fill: rgba(138, 200, 255, 0.04);
+  stroke: rgba(138, 200, 255, 0.6);
 }
 
 .node--topic circle {
