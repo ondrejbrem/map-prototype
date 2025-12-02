@@ -7,81 +7,83 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header class="app-header">
-      <div>
-        <p class="label">Experimental Prototype</p>
-        <h1>Concept Learning Map</h1>
-        <p class="subtitle">
-          Explore how areas cluster into topics, atomic goals, terms, and activity types across the informatics curriculum.
-        </p>
-      </div>
-      <div class="legend">
-        <div class="legend__item">
-          <span class="legend__dot legend__dot--area"></span>
-          <span>Area grouping</span>
-        </div>
-        <div class="legend__item">
-          <span class="legend__dot legend__dot--topic"></span>
-          <span>Topic cluster</span>
-        </div>
-        <div class="legend__item">
-          <span class="legend__dot legend__dot--goal"></span>
-          <span>Learning goal</span>
-        </div>
-        <div class="legend__item">
-          <span class="legend__dot legend__dot--activity"></span>
-          <span>Validation activity</span>
-        </div>
-        <div class="legend__item">
-          <span class="legend__dot legend__dot--term"></span>
-          <span>Key term</span>
-        </div>
-      </div>
-    </header>
-
-    <section class="controls">
-      <div class="control-group control-group--source">
-        <label>Dataset</label>
-        <div class="source-controls">
-          <select id="dataset-select" aria-label="Preset datasets"></select>
-          <label class="upload-label">
-            <span>Upload JSON</span>
-            <input type="file" id="data-upload" accept="application/json,.json" />
-          </label>
-        </div>
-      </div>
-      <div class="control-group">
-        <label>Node types</label>
-        <div class="chips" id="type-filter"></div>
-      </div>
-      <div class="control-group">
-        <label>Expertise levels</label>
-        <div class="chips" id="expertise-filter"></div>
-      </div>
-      <div class="control-group control-group--zoom">
-        <label>Zoom</label>
-        <div class="zoom-buttons">
-          <button data-zoom="out" title="Zoom out">-</button>
-          <button data-zoom="in" title="Zoom in">+</button>
-          <span id="zoom-readout">100%</span>
-        </div>
-      </div>
-    </section>
-
-    <main class="layout">
+    <div class="app-shell">
       <section class="map-panel">
         <div id="concept-map" role="img" aria-label="Concept learning map"></div>
         <div class="hint">
           Pan with drag &bull; Zoom with scroll or buttons &bull; Hover or tap nodes for details
         </div>
       </section>
-      <aside class="info-panel" id="info-panel">
-        <div class="info-panel__empty">
-          <h2>Select a node</h2>
-          <p>Zoom to reveal layers (area → topic → atomic goal). Use the dataset switcher above or upload your own JSON.</p>
+      <aside class="side-panel">
+        <header class="app-header">
+          <div>
+            <p class="label">Experimental Prototype</p>
+            <h1>Concept Learning Map</h1>
+            <p class="subtitle">
+              Explore how areas cluster into topics, atomic goals, terms, and activity types across the informatics curriculum.
+            </p>
+          </div>
+          <div class="legend">
+            <div class="legend__item">
+              <span class="legend__dot legend__dot--area"></span>
+              <span>Area grouping</span>
+            </div>
+            <div class="legend__item">
+              <span class="legend__dot legend__dot--topic"></span>
+              <span>Topic cluster</span>
+            </div>
+            <div class="legend__item">
+              <span class="legend__dot legend__dot--goal"></span>
+              <span>Learning goal</span>
+            </div>
+            <div class="legend__item">
+              <span class="legend__dot legend__dot--activity"></span>
+              <span>Validation activity</span>
+            </div>
+            <div class="legend__item">
+              <span class="legend__dot legend__dot--term"></span>
+              <span>Key term</span>
+            </div>
+          </div>
+        </header>
+
+        <section class="controls">
+          <div class="control-group control-group--source">
+            <label>Dataset</label>
+            <div class="source-controls">
+              <select id="dataset-select" aria-label="Preset datasets"></select>
+              <label class="upload-label">
+                <span>Upload JSON</span>
+                <input type="file" id="data-upload" accept="application/json,.json" />
+              </label>
+            </div>
+          </div>
+          <div class="control-group">
+            <label>Node types</label>
+            <div class="chips" id="type-filter"></div>
+          </div>
+          <div class="control-group">
+            <label>Expertise levels</label>
+            <div class="chips" id="expertise-filter"></div>
+          </div>
+          <div class="control-group control-group--zoom">
+            <label>Zoom</label>
+            <div class="zoom-buttons">
+              <button data-zoom="out" title="Zoom out">-</button>
+              <button data-zoom="in" title="Zoom in">+</button>
+              <span id="zoom-readout">100%</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="info-panel" id="info-panel">
+          <div class="info-panel__empty">
+            <h2>Select a node</h2>
+            <p>Zoom to reveal layers (area → topic → atomic goal). Use the dataset switcher above or upload your own JSON.</p>
+          </div>
         </div>
       </aside>
-    </main>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
     <script src="app.js"></script>
