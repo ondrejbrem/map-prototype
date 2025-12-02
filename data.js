@@ -1,905 +1,479 @@
-﻿const conceptData = {
-  nodes: [
-    {
-      id: "area_digital_foundations",
-      type: "area",
-      label: "Digital Foundations",
-      expertise: "A1-B1",
-      description: "Baseline confidence with devices, storage, and local networks.",
-      x: 230,
-      y: 240,
-      radius: 260
-    },
-    {
-      id: "area_connected_world",
-      type: "area",
-      label: "Connected World",
-      expertise: "A2-B2",
-      description: "Communicating, creating, and staying safe in public online spaces.",
-      x: 980,
-      y: 240,
-      radius: 260
-    },
-    {
-      id: "area_computation",
-      type: "area",
-      label: "Computational Creation",
-      expertise: "A2-C1",
-      description: "Programming, data work, automation, and critical AI use.",
-      x: 620,
-      y: 620,
-      radius: 260
-    },
-    {
-      id: "topic_device_basics",
-      type: "topic",
-      label: "Device Fluency",
-      expertise: "A1-A2",
-      lessons: "3 goals",
-      description: "Name hardware, navigate the OS, and build ergonomic habits.",
-      x: 180,
-      y: 180,
-      radius: 120
-    },
-    {
-      id: "topic_network_basics",
-      type: "topic",
-      label: "Networks & Internet",
-      expertise: "A2-B1",
-      lessons: "3 goals",
-      description: "Trace how packets move, compare latency, and vet connectivity.",
-      x: 300,
-      y: 140,
-      radius: 120
-    },
-    {
-      id: "topic_productivity",
-      type: "topic",
-      label: "Productivity & Storage",
-      expertise: "A2-B1",
-      lessons: "3 goals",
-      description: "Organize files, back up assets, and install software intentionally.",
-      x: 220,
-      y: 320,
-      radius: 110
-    },
-    {
-      id: "topic_communication",
-      type: "topic",
-      label: "Communication Craft",
-      expertise: "A2-B1",
-      lessons: "4 goals",
-      description: "Pick the right channel, compose clearly, and facilitate teams.",
-      x: 880,
-      y: 180,
-      radius: 120
-    },
-    {
-      id: "topic_web_literacy",
-      type: "topic",
-      label: "Web Literacy",
-      expertise: "A2-B2",
-      lessons: "4 goals",
-      description: "Structure semantic HTML, style accessibly, and publish responsibly.",
-      x: 1040,
-      y: 210,
-      radius: 120
-    },
-    {
-      id: "topic_security_habits",
-      type: "topic",
-      label: "Security Habits",
-      expertise: "A2-B2",
-      lessons: "4 goals",
-      description: "Protect credentials, spot phishing, and set privacy defaults.",
-      x: 900,
-      y: 320,
-      radius: 120
-    },
-    {
-      id: "topic_programming",
-      type: "topic",
-      label: "Programming Fundamentals",
-      expertise: "A2-B2",
-      lessons: "4 goals",
-      description: "Build and debug small programs with state, flow, and tests.",
-      x: 520,
-      y: 540,
-      radius: 130
-    },
-    {
-      id: "topic_data_literacy",
-      type: "topic",
-      label: "Data Literacy",
-      expertise: "B1-B2",
-      lessons: "3 goals",
-      description: "Collect, clean, query, and interpret datasets for decisions.",
-      x: 700,
-      y: 540,
-      radius: 130
-    },
-    {
-      id: "topic_automation_ai",
-      type: "topic",
-      label: "Automation & AI",
-      expertise: "B2-C1",
-      lessons: "3 goals",
-      description: "Draft prompts, script repetitive work, and critique model bias.",
-      x: 620,
-      y: 700,
-      radius: 130
-    },
-    {
-      id: "goal_use_keyboard",
-      type: "goal",
-      label: "Use keyboard & mouse confidently",
-      expertise: "A1",
-      description: "Navigate, select, and execute shortcuts without losing focus.",
-      x: 200,
-      y: 130
-    },
-    {
-      id: "goal_explain_device_parts",
-      type: "goal",
-      label: "Explain device parts",
-      expertise: "A1",
-      description: "Describe CPU, RAM, storage, and peripherals with simple metaphors.",
-      x: 170,
-      y: 190
-    },
-    {
-      id: "goal_manage_files",
-      type: "goal",
-      label: "Organize files & backups",
-      expertise: "A2",
-      description: "Create folder taxonomies, version files, and sync to cloud safely.",
-      x: 300,
-      y: 270
-    },
-    {
-      id: "goal_install_trust",
-      type: "goal",
-      label: "Install software with trust checks",
-      expertise: "A2",
-      description: "Assess publishers, permissions, and sandboxing before installing.",
-      x: 380,
-      y: 300
-    },
-    {
-      id: "goal_trace_network_path",
-      type: "goal",
-      label: "Trace how packets travel",
-      expertise: "B1",
-      description: "Follow a request across LAN, DNS, routing, and back.",
-      x: 470,
-      y: 140
-    },
-    {
-      id: "goal_compare_bandwidth",
-      type: "goal",
-      label: "Compare bandwidth & latency",
-      expertise: "B1",
-      description: "Explain how throughput and lag affect real tasks and tools.",
-      x: 500,
-      y: 190
-    },
-    {
-      id: "goal_read_ip_dns",
-      type: "goal",
-      label: "Read IP, DNS, and routing basics",
-      expertise: "B1",
-      description: "Interpret traceroute outputs and DNS lookups to diagnose issues.",
-      x: 470,
-      y: 230
-    },
-    {
-      id: "goal_choose_channels",
-      type: "goal",
-      label: "Choose the right channel",
-      expertise: "A2",
-      description: "Pick synchronous/asynchronous channels based on purpose and risk.",
-      x: 810,
-      y: 150
-    },
-    {
-      id: "goal_compose_email",
-      type: "goal",
-      label: "Compose a complete email",
-      expertise: "A2",
-      description: "Structure subject, intent, attachments, and calls-to-action.",
-      x: 870,
-      y: 110
-    },
-    {
-      id: "goal_chat_etiquette",
-      type: "goal",
-      label: "Apply chat etiquette",
-      expertise: "B1",
-      description: "Moderate tone, threads, and escalation paths in team chat.",
-      x: 830,
-      y: 210
-    },
-    {
-      id: "goal_run_meeting",
-      type: "goal",
-      label: "Run productive online meetings",
-      expertise: "B1",
-      description: "Set agendas, assign roles, and document outcomes live.",
-      x: 820,
-      y: 260
-    },
-    {
-      id: "goal_structure_html",
-      type: "goal",
-      label: "Structure HTML semantically",
-      expertise: "A2",
-      description: "Use headings, sections, and lists to convey meaning.",
-      x: 1040,
-      y: 170
-    },
-    {
-      id: "goal_style_css",
-      type: "goal",
-      label: "Style layouts accessibly",
-      expertise: "B1",
-      description: "Combine flexbox, spacing, and contrast to aid readability.",
-      x: 1080,
-      y: 230
-    },
-    {
-      id: "goal_publish_page",
-      type: "goal",
-      label: "Publish a static page",
-      expertise: "B1",
-      description: "Bundle assets, deploy to hosting, and verify links over HTTPS.",
-      x: 990,
-      y: 280
-    },
-    {
-      id: "goal_license_content",
-      type: "goal",
-      label: "License & attribute content",
-      expertise: "B1",
-      description: "Select Creative Commons licenses and attribute reused media.",
-      x: 940,
-      y: 330
-    },
-    {
-      id: "goal_secure_passwords",
-      type: "goal",
-      label: "Create secure passwords",
-      expertise: "B1",
-      description: "Design passphrases, rotate credentials, and coach peers.",
-      x: 760,
-      y: 360
-    },
-    {
-      id: "goal_spot_phishing",
-      type: "goal",
-      label: "Spot phishing attempts",
-      expertise: "B2",
-      description: "Dissect links, headers, urgency cues, and sender authenticity.",
-      x: 820,
-      y: 330
-    },
-    {
-      id: "goal_privacy_settings",
-      type: "goal",
-      label: "Set privacy defaults",
-      expertise: "A2",
-      description: "Configure device, browser, and app settings to minimize leakage.",
-      x: 760,
-      y: 300
-    },
-    {
-      id: "goal_write_variables",
-      type: "goal",
-      label: "Use variables & expressions",
-      expertise: "A2",
-      description: "Trace values through assignments in block or text languages.",
-      x: 520,
-      y: 520
-    },
-    {
-      id: "goal_control_structures",
-      type: "goal",
-      label: "Control flow with conditionals & loops",
-      expertise: "B1",
-      description: "Predict program state as branches and iterations run.",
-      x: 540,
-      y: 580
-    },
-    {
-      id: "goal_debug",
-      type: "goal",
-      label: "Debug with intention",
-      expertise: "B2",
-      description: "Form hypotheses, isolate bugs, and document fixes.",
-      x: 500,
-      y: 480
-    },
-    {
-      id: "goal_model_problem",
-      type: "goal",
-      label: "Model problems algorithmically",
-      expertise: "B2",
-      description: "Represent solutions with flowcharts and stepwise refinement.",
-      x: 500,
-      y: 640
-    },
-    {
-      id: "goal_data_collect_clean",
-      type: "goal",
-      label: "Collect & clean data",
-      expertise: "B1",
-      description: "Plan data collection, handle missing values, and document steps.",
-      x: 700,
-      y: 480
-    },
-    {
-      id: "goal_visualize_data",
-      type: "goal",
-      label: "Visualize and interpret data",
-      expertise: "B2",
-      description: "Select chart types and articulate insights with evidence.",
-      x: 750,
-      y: 540
-    },
-    {
-      id: "goal_basic_sql",
-      type: "goal",
-      label: "Query with SQL basics",
-      expertise: "B2",
-      description: "Filter, sort, and join tables to answer questions.",
-      x: 720,
-      y: 620
-    },
-    {
-      id: "goal_ai_prompting",
-      type: "goal",
-      label: "Prompt AI tools precisely",
-      expertise: "B2",
-      description: "Draft prompts, add constraints, and verify tool responses.",
-      x: 880,
-      y: 420
-    },
-    {
-      id: "goal_automation",
-      type: "goal",
-      label: "Automate repetitive tasks",
-      expertise: "B2",
-      description: "Script file, data, or messaging tasks with safe defaults.",
-      x: 620,
-      y: 720
-    },
-    {
-      id: "goal_evaluate_bias",
-      type: "goal",
-      label: "Evaluate bias & impact",
-      expertise: "C1",
-      description: "Audit datasets and model outputs for fairness and risk.",
-      x: 660,
-      y: 670
-    },
-    {
-      id: "activity_scavenger",
-      type: "activity",
-      label: "Tech scavenger hunt",
-      activityType: "motivation",
-      expertise: "A1",
-      description: "Learners hunt for ports, buttons, and shortcuts around the lab.",
-      x: 210,
-      y: 200
-    },
-    {
-      id: "activity_teardown",
-      type: "activity",
-      label: "Teach-back teardown",
-      activityType: "exposition",
-      expertise: "A1",
-      description: "Pairs explain what each component does using simple analogies.",
-      x: 170,
-      y: 220
-    },
-    {
-      id: "activity_file_sort",
-      type: "activity",
-      label: "File explorer quest",
-      activityType: "validation",
-      expertise: "A2",
-      description: "Teams reorganize messy folders until rubric criteria are met.",
-      x: 320,
-      y: 310
-    },
-    {
-      id: "activity_backup_plan",
-      type: "activity",
-      label: "Backup plan canvas",
-      activityType: "reflection",
-      expertise: "A2",
-      description: "Students design a 3-2-1 backup plan and critique peers.",
-      x: 360,
-      y: 340
-    },
-    {
-      id: "activity_packet_lab",
-      type: "activity",
-      label: "Packet journey lab",
-      activityType: "validation",
-      expertise: "B1",
-      description: "Trace traceroute outputs and annotate each hop.",
-      x: 470,
-      y: 180
-    },
-    {
-      id: "activity_speed_test",
-      type: "activity",
-      label: "Bandwidth clinic",
-      activityType: "validation",
-      expertise: "B1",
-      description: "Compare speed tests and write trade-off notes.",
-      x: 520,
-      y: 220
-    },
-    {
-      id: "activity_channel_matrix",
-      type: "activity",
-      label: "Channel decision matrix",
-      activityType: "reflection",
-      expertise: "A2",
-      description: "Sort scenarios into chat, email, docs, or calls with rationales.",
-      x: 820,
-      y: 190
-    },
-    {
-      id: "activity_email_workshop",
-      type: "activity",
-      label: "Email clarity workshop",
-      activityType: "validation",
-      expertise: "A2",
-      description: "Revise drafts for subject lines, scannability, and tone.",
-      x: 880,
-      y: 140
-    },
-    {
-      id: "activity_chat_roleplay",
-      type: "activity",
-      label: "Chat tone role-play",
-      activityType: "motivation",
-      expertise: "B1",
-      description: "Role-play escalation paths and empathic responses.",
-      x: 840,
-      y: 240
-    },
-    {
-      id: "activity_meeting_sim",
-      type: "activity",
-      label: "Meeting simulation",
-      activityType: "validation",
-      expertise: "B1",
-      description: "Rotate facilitator/timekeeper roles to run a 10-minute stand-up.",
-      x: 820,
-      y: 280
-    },
-    {
-      id: "activity_wireframe",
-      type: "activity",
-      label: "Wireframe the story",
-      activityType: "exposition",
-      expertise: "A2",
-      description: "Sketch page structure from user narratives.",
-      x: 1040,
-      y: 200
-    },
-    {
-      id: "activity_accessibility_walk",
-      type: "activity",
-      label: "Accessibility spot-check",
-      activityType: "validation",
-      expertise: "B1",
-      description: "Audit colors, landmarks, and tab order on peer pages.",
-      x: 1080,
-      y: 260
-    },
-    {
-      id: "activity_publish",
-      type: "activity",
-      label: "Deploy it live",
-      activityType: "validation",
-      expertise: "B1",
-      description: "Publish to a static host and run a post-deploy checklist.",
-      x: 990,
-      y: 320
-    },
-    {
-      id: "activity_password_audit",
-      type: "activity",
-      label: "Password audit clinic",
-      activityType: "validation",
-      expertise: "B1",
-      description: "Learners assess sample credentials and propose upgrades.",
-      x: 760,
-      y: 400
-    },
-    {
-      id: "activity_phishing_sim",
-      type: "activity",
-      label: "Phishing simulation",
-      activityType: "validation",
-      expertise: "B2",
-      description: "Classify inbox items and justify decisions.",
-      x: 820,
-      y: 360
-    },
-    {
-      id: "activity_privacy_check",
-      type: "activity",
-      label: "Privacy check-up",
-      activityType: "reflection",
-      expertise: "A2",
-      description: "Tune settings on a shared device and document changes.",
-      x: 760,
-      y: 330
-    },
-    {
-      id: "activity_pair_programming",
-      type: "activity",
-      label: "Pair-programming kata",
-      activityType: "validation",
-      expertise: "B1",
-      description: "Alternate driver/navigator to implement short challenges.",
-      x: 540,
-      y: 560
-    },
-    {
-      id: "activity_bug_hunt",
-      type: "activity",
-      label: "Bug hunt dojo",
-      activityType: "validation",
-      expertise: "B2",
-      description: "Triage and fix seeded bugs using a tiny issue board.",
-      x: 500,
-      y: 520
-    },
-    {
-      id: "activity_flowchart",
-      type: "activity",
-      label: "Flowchart studio",
-      activityType: "exposition",
-      expertise: "B2",
-      description: "Draft and peer-review flowcharts before coding.",
-      x: 500,
-      y: 610
-    },
-    {
-      id: "activity_data_journal",
-      type: "activity",
-      label: "Data journal",
-      activityType: "reflection",
-      expertise: "B1",
-      description: "Log collection steps, sources, and cleaning choices.",
-      x: 700,
-      y: 500
-    },
-    {
-      id: "activity_chart_gallery",
-      type: "activity",
-      label: "Insight gallery walk",
-      activityType: "validation",
-      expertise: "B2",
-      description: "Present charts; peers question evidence quality.",
-      x: 750,
-      y: 560
-    },
-    {
-      id: "activity_sql_kata",
-      type: "activity",
-      label: "Query kata",
-      activityType: "validation",
-      expertise: "B2",
-      description: "Solve bite-sized SQL prompts and compare plans.",
-      x: 720,
-      y: 640
-    },
-    {
-      id: "activity_prompt_lab",
-      type: "activity",
-      label: "Prompt lab",
-      activityType: "motivation",
-      expertise: "B2",
-      description: "Iterate prompts and fact-check tool responses.",
-      x: 900,
-      y: 450
-    },
-    {
-      id: "activity_automation_sprint",
-      type: "activity",
-      label: "Automation sprint",
-      activityType: "validation",
-      expertise: "B2",
-      description: "Ship a small script that removes a repetitive task.",
-      x: 620,
-      y: 740
-    },
-    {
-      id: "activity_bias_circle",
-      type: "activity",
-      label: "Bias debate circle",
-      activityType: "reflection",
-      expertise: "C1",
-      description: "Debate trade-offs in dataset and model design choices.",
-      x: 660,
-      y: 700
-    },
-    {
-      id: "term_cpu",
-      type: "term",
-      label: "CPU",
-      expertise: "A1",
-      description: "Central processing unit; executes program instructions.",
-      x: 170,
-      y: 120
-    },
-    {
-      id: "term_ram",
-      type: "term",
-      label: "RAM",
-      expertise: "A1",
-      description: "Random access memory; holds active data for quick access.",
-      x: 220,
-      y: 90
-    },
-    {
-      id: "term_filesystem",
-      type: "term",
-      label: "Filesystem",
-      expertise: "A2",
-      description: "Hierarchical structure for storing and finding files.",
-      x: 300,
-      y: 220
-    },
-    {
-      id: "term_cloud_sync",
-      type: "term",
-      label: "Cloud sync",
-      expertise: "A2",
-      description: "Continuous backup that mirrors local changes to the cloud.",
-      x: 340,
-      y: 300
-    },
-    {
-      id: "term_packet",
-      type: "term",
-      label: "Packet",
-      expertise: "B1",
-      description: "Chunk of data that carries headers and payload across networks.",
-      x: 480,
-      y: 120
-    },
-    {
-      id: "term_bandwidth",
-      type: "term",
-      label: "Bandwidth",
-      expertise: "B1",
-      description: "Maximum data transfer rate of a connection.",
-      x: 520,
-      y: 170
-    },
-    {
-      id: "term_dns",
-      type: "term",
-      label: "DNS",
-      expertise: "B1",
-      description: "Domain Name System maps names to IP addresses.",
-      x: 520,
-      y: 240
-    },
-    {
-      id: "term_tls",
-      type: "term",
-      label: "TLS",
-      expertise: "B1",
-      description: "Transport Layer Security; encrypts data in transit.",
-      x: 760,
-      y: 260
-    },
-    {
-      id: "term_html",
-      type: "term",
-      label: "HTML",
-      expertise: "A2",
-      description: "Markup language for structuring web content.",
-      x: 1040,
-      y: 140
-    },
-    {
-      id: "term_css",
-      type: "term",
-      label: "CSS",
-      expertise: "B1",
-      description: "Stylesheets to control layout, color, and type.",
-      x: 1080,
-      y: 200
-    },
-    {
-      id: "term_repo",
-      type: "term",
-      label: "Repository",
-      expertise: "B1",
-      description: "Versioned storage for code and assets.",
-      x: 980,
-      y: 300
-    },
-    {
-      id: "term_algorithm",
-      type: "term",
-      label: "Algorithm",
-      expertise: "B1",
-      description: "Finite set of steps that solve a category of problems.",
-      x: 500,
-      y: 660
-    },
-    {
-      id: "term_variable",
-      type: "term",
-      label: "Variable",
-      expertise: "A2",
-      description: "Named storage for values in a program.",
-      x: 520,
-      y: 500
-    },
-    {
-      id: "term_dataset",
-      type: "term",
-      label: "Dataset",
-      expertise: "B1",
-      description: "Structured collection of related observations.",
-      x: 700,
-      y: 460
-    },
-    {
-      id: "term_sql",
-      type: "term",
-      label: "SQL",
-      expertise: "B2",
-      description: "Query language for relational databases.",
-      x: 720,
-      y: 600
-    },
-    {
-      id: "term_prompt",
-      type: "term",
-      label: "Prompt",
-      expertise: "B2",
-      description: "Structured instruction sent to an AI system.",
-      x: 900,
-      y: 430
-    },
-    {
-      id: "term_mfa",
-      type: "term",
-      label: "Multi-factor auth",
-      expertise: "B1",
-      description: "Authentication with something you know and something you have.",
-      x: 780,
-      y: 440
-    },
-    {
-      id: "term_phishing_signals",
-      type: "term",
-      label: "Phishing signals",
-      expertise: "B2",
-      description: "Indicators such as mismatched URLs, urgency, and spoofing.",
-      x: 840,
-      y: 300
-    },
-    {
-      id: "term_license",
-      type: "term",
-      label: "Creative Commons",
-      expertise: "B1",
-      description: "Licensing framework that clarifies reuse permissions.",
-      x: 940,
-      y: 360
-    }
-  ],
-  edges: [
-    { id: "e_area_topic_1", source: "area_digital_foundations", target: "topic_device_basics", relation: "contains" },
-    { id: "e_area_topic_2", source: "area_digital_foundations", target: "topic_network_basics", relation: "contains" },
-    { id: "e_area_topic_3", source: "area_digital_foundations", target: "topic_productivity", relation: "contains" },
-    { id: "e_area_topic_4", source: "area_connected_world", target: "topic_communication", relation: "contains" },
-    { id: "e_area_topic_5", source: "area_connected_world", target: "topic_web_literacy", relation: "contains" },
-    { id: "e_area_topic_6", source: "area_connected_world", target: "topic_security_habits", relation: "contains" },
-    { id: "e_area_topic_7", source: "area_computation", target: "topic_programming", relation: "contains" },
-    { id: "e_area_topic_8", source: "area_computation", target: "topic_data_literacy", relation: "contains" },
-    { id: "e_area_topic_9", source: "area_computation", target: "topic_automation_ai", relation: "contains" },
-    { id: "e_area_topic_10", source: "area_computation", target: "topic_security_habits", relation: "contains" },
-    { id: "e_topic_goal_1", source: "topic_device_basics", target: "goal_use_keyboard", relation: "contains" },
-    { id: "e_topic_goal_2", source: "topic_device_basics", target: "goal_explain_device_parts", relation: "contains" },
-    { id: "e_topic_goal_3", source: "topic_productivity", target: "goal_manage_files", relation: "contains" },
-    { id: "e_topic_goal_4", source: "topic_productivity", target: "goal_install_trust", relation: "contains" },
-    { id: "e_topic_goal_5", source: "topic_network_basics", target: "goal_trace_network_path", relation: "contains" },
-    { id: "e_topic_goal_6", source: "topic_network_basics", target: "goal_compare_bandwidth", relation: "contains" },
-    { id: "e_topic_goal_7", source: "topic_network_basics", target: "goal_read_ip_dns", relation: "contains" },
-    { id: "e_topic_goal_8", source: "topic_communication", target: "goal_choose_channels", relation: "contains" },
-    { id: "e_topic_goal_9", source: "topic_communication", target: "goal_compose_email", relation: "contains" },
-    { id: "e_topic_goal_10", source: "topic_communication", target: "goal_chat_etiquette", relation: "contains" },
-    { id: "e_topic_goal_11", source: "topic_communication", target: "goal_run_meeting", relation: "contains" },
-    { id: "e_topic_goal_12", source: "topic_web_literacy", target: "goal_structure_html", relation: "contains" },
-    { id: "e_topic_goal_13", source: "topic_web_literacy", target: "goal_style_css", relation: "contains" },
-    { id: "e_topic_goal_14", source: "topic_web_literacy", target: "goal_publish_page", relation: "contains" },
-    { id: "e_topic_goal_15", source: "topic_web_literacy", target: "goal_license_content", relation: "contains" },
-    { id: "e_topic_goal_16", source: "topic_security_habits", target: "goal_secure_passwords", relation: "contains" },
-    { id: "e_topic_goal_17", source: "topic_security_habits", target: "goal_spot_phishing", relation: "contains" },
-    { id: "e_topic_goal_18", source: "topic_security_habits", target: "goal_privacy_settings", relation: "contains" },
-    { id: "e_topic_goal_19", source: "topic_programming", target: "goal_write_variables", relation: "contains" },
-    { id: "e_topic_goal_20", source: "topic_programming", target: "goal_control_structures", relation: "contains" },
-    { id: "e_topic_goal_21", source: "topic_programming", target: "goal_debug", relation: "contains" },
-    { id: "e_topic_goal_22", source: "topic_programming", target: "goal_model_problem", relation: "contains" },
-    { id: "e_topic_goal_23", source: "topic_data_literacy", target: "goal_data_collect_clean", relation: "contains" },
-    { id: "e_topic_goal_24", source: "topic_data_literacy", target: "goal_visualize_data", relation: "contains" },
-    { id: "e_topic_goal_25", source: "topic_data_literacy", target: "goal_basic_sql", relation: "contains" },
-    { id: "e_topic_goal_26", source: "topic_automation_ai", target: "goal_ai_prompting", relation: "contains" },
-    { id: "e_topic_goal_27", source: "topic_automation_ai", target: "goal_automation", relation: "contains" },
-    { id: "e_topic_goal_28", source: "topic_automation_ai", target: "goal_evaluate_bias", relation: "contains" },
-    { id: "e_topic_overlap_install_trust", source: "topic_security_habits", target: "goal_install_trust", relation: "contains" },
-    { id: "e_topic_overlap_chat", source: "topic_security_habits", target: "goal_chat_etiquette", relation: "contains" },
-    { id: "e_topic_overlap_phish_comm", source: "topic_communication", target: "goal_spot_phishing", relation: "contains" },
-    { id: "e_topic_overlap_license", source: "topic_communication", target: "goal_license_content", relation: "contains" },
-    { id: "e_activity_goal_1", source: "activity_scavenger", target: "goal_use_keyboard", relation: "validates" },
-    { id: "e_activity_goal_2", source: "activity_teardown", target: "goal_explain_device_parts", relation: "validates" },
-    { id: "e_activity_goal_3", source: "activity_file_sort", target: "goal_manage_files", relation: "validates" },
-    { id: "e_activity_goal_4", source: "activity_backup_plan", target: "goal_install_trust", relation: "validates" },
-    { id: "e_activity_goal_5", source: "activity_packet_lab", target: "goal_trace_network_path", relation: "validates" },
-    { id: "e_activity_goal_6", source: "activity_speed_test", target: "goal_compare_bandwidth", relation: "validates" },
-    { id: "e_activity_goal_7", source: "activity_channel_matrix", target: "goal_choose_channels", relation: "validates" },
-    { id: "e_activity_goal_8", source: "activity_email_workshop", target: "goal_compose_email", relation: "validates" },
-    { id: "e_activity_goal_9", source: "activity_chat_roleplay", target: "goal_chat_etiquette", relation: "validates" },
-    { id: "e_activity_goal_10", source: "activity_meeting_sim", target: "goal_run_meeting", relation: "validates" },
-    { id: "e_activity_goal_11", source: "activity_wireframe", target: "goal_structure_html", relation: "validates" },
-    { id: "e_activity_goal_12", source: "activity_accessibility_walk", target: "goal_style_css", relation: "validates" },
-    { id: "e_activity_goal_13", source: "activity_publish", target: "goal_publish_page", relation: "validates" },
-    { id: "e_activity_goal_14", source: "activity_password_audit", target: "goal_secure_passwords", relation: "validates" },
-    { id: "e_activity_goal_15", source: "activity_phishing_sim", target: "goal_spot_phishing", relation: "validates" },
-    { id: "e_activity_goal_16", source: "activity_privacy_check", target: "goal_privacy_settings", relation: "validates" },
-    { id: "e_activity_goal_17", source: "activity_pair_programming", target: "goal_write_variables", relation: "validates" },
-    { id: "e_activity_goal_18", source: "activity_pair_programming", target: "goal_control_structures", relation: "validates" },
-    { id: "e_activity_goal_19", source: "activity_bug_hunt", target: "goal_debug", relation: "validates" },
-    { id: "e_activity_goal_20", source: "activity_flowchart", target: "goal_model_problem", relation: "validates" },
-    { id: "e_activity_goal_21", source: "activity_data_journal", target: "goal_data_collect_clean", relation: "validates" },
-    { id: "e_activity_goal_22", source: "activity_chart_gallery", target: "goal_visualize_data", relation: "validates" },
-    { id: "e_activity_goal_23", source: "activity_sql_kata", target: "goal_basic_sql", relation: "validates" },
-    { id: "e_activity_goal_24", source: "activity_prompt_lab", target: "goal_ai_prompting", relation: "validates" },
-    { id: "e_activity_goal_25", source: "activity_automation_sprint", target: "goal_automation", relation: "validates" },
-    { id: "e_activity_goal_26", source: "activity_bias_circle", target: "goal_evaluate_bias", relation: "validates" },
-    { id: "e_term_goal_1", source: "term_cpu", target: "goal_explain_device_parts", relation: "relates" },
-    { id: "e_term_goal_2", source: "term_ram", target: "goal_explain_device_parts", relation: "relates" },
-    { id: "e_term_goal_3", source: "term_filesystem", target: "goal_manage_files", relation: "relates" },
-    { id: "e_term_goal_4", source: "term_cloud_sync", target: "goal_manage_files", relation: "relates" },
-    { id: "e_term_goal_5", source: "term_cloud_sync", target: "goal_privacy_settings", relation: "relates" },
-    { id: "e_term_goal_6", source: "term_packet", target: "goal_trace_network_path", relation: "relates" },
-    { id: "e_term_goal_7", source: "term_bandwidth", target: "goal_compare_bandwidth", relation: "relates" },
-    { id: "e_term_goal_8", source: "term_dns", target: "goal_read_ip_dns", relation: "relates" },
-    { id: "e_term_goal_9", source: "term_tls", target: "goal_secure_passwords", relation: "relates" },
-    { id: "e_term_goal_10", source: "term_tls", target: "goal_publish_page", relation: "relates" },
-    { id: "e_term_goal_11", source: "term_html", target: "goal_structure_html", relation: "relates" },
-    { id: "e_term_goal_12", source: "term_css", target: "goal_style_css", relation: "relates" },
-    { id: "e_term_goal_13", source: "term_repo", target: "goal_publish_page", relation: "relates" },
-    { id: "e_term_goal_14", source: "term_variable", target: "goal_write_variables", relation: "relates" },
-    { id: "e_term_goal_15", source: "term_variable", target: "goal_control_structures", relation: "relates" },
-    { id: "e_term_goal_16", source: "term_algorithm", target: "goal_model_problem", relation: "relates" },
-    { id: "e_term_goal_17", source: "term_algorithm", target: "goal_debug", relation: "relates" },
-    { id: "e_term_goal_18", source: "term_dataset", target: "goal_data_collect_clean", relation: "relates" },
-    { id: "e_term_goal_19", source: "term_dataset", target: "goal_visualize_data", relation: "relates" },
-    { id: "e_term_goal_20", source: "term_sql", target: "goal_basic_sql", relation: "relates" },
-    { id: "e_term_goal_21", source: "term_prompt", target: "goal_ai_prompting", relation: "relates" },
-    { id: "e_term_goal_22", source: "term_mfa", target: "goal_secure_passwords", relation: "relates" },
-    { id: "e_term_goal_23", source: "term_mfa", target: "goal_privacy_settings", relation: "relates" },
-    { id: "e_term_goal_24", source: "term_phishing_signals", target: "goal_spot_phishing", relation: "relates" },
-    { id: "e_term_goal_25", source: "term_license", target: "goal_license_content", relation: "relates" },
-    { id: "e_term_goal_26", source: "term_license", target: "goal_publish_page", relation: "relates" },
-    { id: "e_topic_overlap_ai_comm", source: "topic_communication", target: "goal_ai_prompting", relation: "contains" },
-    { id: "e_topic_overlap_auto_data", source: "topic_data_literacy", target: "goal_automation", relation: "contains" },
-    { id: "e_topic_overlap_bias", source: "topic_data_literacy", target: "goal_evaluate_bias", relation: "contains" }
-  ]
+const areaNode = {
+  id: "area_media_literacy",
+  type: "area",
+  label: "Mediální výchova",
+  expertise: "B1-B2",
+  description: "Vizualizuje síť témat a atomických cílů Mediální výchovy od porozumění systému po kritické ověřování obsahu.",
+  x: 600,
+  y: 420,
+  radius: 430,
+  labelSize: "1.2rem"
 };
+
+const baseTopics = [
+  {
+    id: "topic_media_system",
+    type: "topic",
+    label: "Mediální systém a regulace",
+    expertise: "B1-B2",
+    description: "Mapuje instituce, vlastnictví a pravidla, která rámují fungování médií a ochranu tvůrců.",
+    x: 360,
+    y: 260,
+    radius: 170,
+    labelSize: "0.95rem"
+  },
+  {
+    id: "topic_content_genres",
+    type: "topic",
+    label: "Obsah a žánry",
+    expertise: "B1-B2",
+    description: "Sleduje, jak vzniká mediální obsah, jaké žánry používá a jak reprezentuje skupiny lidí.",
+    x: 840,
+    y: 260,
+    radius: 170,
+    labelSize: "1.05rem"
+  },
+  {
+    id: "topic_manipulation_influence",
+    type: "topic",
+    label: "Manipulace a vliv",
+    expertise: "B1-B2",
+    description: "Ukazuje strategie ovlivňování, polarizační taktiky i informační útoky zaměřené na publikum.",
+    x: 360,
+    y: 600,
+    radius: 170,
+    labelSize: "0.9rem"
+  },
+  {
+    id: "topic_critical_verification",
+    type: "topic",
+    label: "Kritické myšlení a ověřování",
+    expertise: "B1-B2",
+    description: "Opírá se o logiku, fact-checking a práci s důkazy pro posouzení kvality mediálního sdělení.",
+    x: 840,
+    y: 600,
+    radius: 170,
+    labelSize: "0.9rem"
+  }
+];
+
+const termLibrary = {
+  term_mass_media: {
+    label: "Medium / mass media",
+    expertise: "B1",
+    description: "Tradiční platformy jako televize, rozhlas či tisk, které jednosměrně oslovují široké publikum."
+  },
+  term_media_ethics: {
+    label: "Media ethics",
+    expertise: "B1",
+    description: "Soubor norem a dilemat, podle nichž redakce rozhodují o férovém obsahu."
+  },
+  term_copyright: {
+    label: "Copyright",
+    expertise: "B1",
+    description: "Právní rámec, který stanovuje, kdo může dílo používat a za jakých podmínek."
+  },
+  term_media_ownership: {
+    label: "Public-service / state / private media",
+    expertise: "B1",
+    description: "Struktura vlastnictví médií napříč veřejnoprávními, státními a soukromými institucemi.",
+    labelSize: "0.78rem"
+  },
+  term_licence_fee: {
+    label: "Licence fee (broadcast licence fee)",
+    expertise: "B1",
+    description: "Poplatek, jímž domácnosti financují veřejnoprávní vysílání a jeho nezávislost.",
+    labelSize: "0.8rem"
+  },
+  term_news_journalism: {
+    label: "News / journalism",
+    expertise: "B1-B2",
+    description: "Profesní proces vytváření a sdílení ověřených informací podle pravidel žurnalistiky."
+  },
+  term_advertising: {
+    label: "Advertising / propaganda / product placement",
+    expertise: "B1",
+    description: "Komunikace zaměřená na přesvědčení publika, včetně propagandy a skrytého umístění produktů.",
+    labelSize: "0.8rem"
+  },
+  term_stereotype: {
+    label: "Stereotype",
+    expertise: "B1-B2",
+    description: "Zjednodušené a často předsudečné představy o skupinách lidí."
+  },
+  term_social_network_types: {
+    label: "Types of social networks",
+    expertise: "B1",
+    description: "Rozličné sociální platformy lišící se formátem, publikem i pravidly interakce.",
+    labelSize: "0.82rem"
+  },
+  term_disinformation: {
+    label: "Disinformation / fake news / deepfake",
+    expertise: "B1-B2",
+    description: "Záměrně zavádějící obsah jako fake news nebo deepfaky, který narušuje důvěru v informace.",
+    labelSize: "0.78rem"
+  },
+  term_manipulation: {
+    label: "Manipulation of public opinion",
+    expertise: "B1",
+    description: "Techniky, které upravují veřejné mínění pomocí emocí, polopravd a opakování."
+  },
+  term_influencer: {
+    label: "Influencer",
+    expertise: "B1",
+    description: "Osoba s výrazným dosahem na sociálních sítích, která může ovlivňovat postoje publika."
+  },
+  term_clickbait: {
+    label: "Clickbait",
+    expertise: "B1-B2",
+    description: "Titulek navržený pro maximalizaci prokliků pomocí senzace, neúplnosti či přehánění."
+  },
+  term_dark_posting: {
+    label: "Dark posting",
+    expertise: "B1",
+    description: "Cílené placené příspěvky, které jsou viditelné jen zvoleným segmentům publika.",
+    labelSize: "0.78rem"
+  },
+  term_echo_chamber: {
+    label: "Echo chamber / rabbit hole / social (filter) bubble",
+    expertise: "B1",
+    description: "Prostředí, kde algoritmy a kontakty opakují stejné názory a filtrují odlišné hlasy.",
+    labelSize: "0.72rem"
+  },
+  term_hybrid_warfare: {
+    label: "Hybrid warfare",
+    expertise: "B1",
+    description: "Kombinace vojenských, kybernetických a informačních taktik k oslabení protivníka."
+  },
+  term_microtargeting: {
+    label: "Target audience / microtargeting",
+    expertise: "B1",
+    description: "Precizní doručování sdělení úzkým publikům na základě detailních dat o chování.",
+    labelSize: "0.8rem"
+  },
+  term_critical_thinking: {
+    label: "Critical thinking",
+    expertise: "B1",
+    description: "Kognitivní proces zpochybňování tvrzení, hledání důkazů a hodnocení zdrojů."
+  },
+  term_fact_checking: {
+    label: "Source of information / fact-checking",
+    expertise: "B1-B2",
+    description: "Systematické ověřování tvrzení pomocí spolehlivých zdrojů a transparentních postupů.",
+    labelSize: "0.8rem"
+  },
+  term_algorithm: {
+    label: "Algorithm",
+    expertise: "B1-B2",
+    description: "Sada pravidel, která automaticky rozhoduje, třídí nebo doporučuje obsah uživatelům."
+  },
+  term_logical_fallacy: {
+    label: "Logical fallacy",
+    expertise: "B1-B2",
+    description: "Opakující se chyby v argumentaci, které na první pohled působí přesvědčivě."
+  }
+};
+
+const atomicGoals = [
+  {
+    id: "goal_mass_media_generalization",
+    termId: "term_mass_media",
+    topicId: "topic_media_system",
+    label: "Masová média: vyber zobecnění",
+    expertise: "B1",
+    description: "Žák vybere z nabízených tvrzení to, které je platným zobecněním o masových médiích (nikoli jednotlivým faktem), a své rozhodnutí doloží dvěma relevantními příklady."
+  },
+  {
+    id: "goal_media_ethics_generalization",
+    termId: "term_media_ethics",
+    topicId: "topic_media_system",
+    label: "Mediální etika: dolož pravidla",
+    expertise: "B1",
+    description: "Žák rozhodne, které tvrzení je zobecněním o mediální etice (nikoli jednotlivým faktem), a volbu zdůvodní dvěma příklady pravidel či dilemat."
+  },
+  {
+    id: "goal_copyright_generalization",
+    termId: "term_copyright",
+    topicId: "topic_media_system",
+    label: "Copyright: vysvětli pravidla",
+    expertise: "B1",
+    description: "Žák rozhodne, které tvrzení je zobecněním o autorském právu (copyrightu) (nikoli jednotlivým faktem), a volbu podpoří dvěma příklady pravidel či situací."
+  },
+  {
+    id: "goal_media_ownership_generalization",
+    termId: "term_media_ownership",
+    topicId: "topic_media_system",
+    label: "Typy médií: rozliš instituce",
+    expertise: "B1",
+    description: "Žák vybere platné zobecnění o veřejnoprávních, státních a soukromých médiích (nikoli jednotlivým faktem) a rozhodnutí podpoří dvěma příklady institucí či znaků."
+  },
+  {
+    id: "goal_licence_fee_generalization",
+    termId: "term_licence_fee",
+    topicId: "topic_media_system",
+    label: "Poplatky: vysvětli fungování",
+    expertise: "B1",
+    description: "Žák rozhodne, které tvrzení je zobecněním o koncesionářských poplatcích (nikoli jednotlivým faktem), a volbu doloží dvěma příklady fungování."
+  },
+  {
+    id: "goal_news_generalization",
+    termId: "term_news_journalism",
+    topicId: "topic_content_genres",
+    label: "Žurnalistika: určuj zobecnění",
+    expertise: "B1",
+    description: "Žák rozhodne, které tvrzení je zobecněním o zprávách a žurnalistice (nikoli jednotlivým faktem), a volbu zdůvodní dvěma příklady z praxe."
+  },
+  {
+    id: "goal_news_experiment_5w1h",
+    termId: "term_news_journalism",
+    topicId: "topic_content_genres",
+    label: "Zprávy: test 5W1H",
+    expertise: "B2",
+    description: "Žák formuluje předpověď a navrhne, provede a vyhodnotí experiment, kterým ověří zobecnění, že zpravodajské texty obvykle odpovídají na otázky 5W1H (kdo, co, kdy, kde, proč a jak)."
+  },
+  {
+    id: "goal_advertising_generalization",
+    termId: "term_advertising",
+    topicId: "topic_content_genres",
+    label: "Reklama: posuď zobecnění",
+    expertise: "B1",
+    description: "Žák vybere platné zobecnění o reklamě, propagandě a product placementu (nikoli jednotlivým faktem) a rozhodnutí podpoří dvěma příklady."
+  },
+  {
+    id: "goal_stereotype_generalization",
+    termId: "term_stereotype",
+    topicId: "topic_content_genres",
+    label: "Stereotypy: rozliš tvrzení",
+    expertise: "B1",
+    description: "Žák rozhodne, které tvrzení je zobecněním o stereotypech (nikoli jednotlivým faktem), a volbu zdůvodní dvěma ilustračními příklady."
+  },
+  {
+    id: "goal_stereotype_ad_analysis",
+    termId: "term_stereotype",
+    topicId: "topic_content_genres",
+    label: "Stereotypy: analyzuj reklamy",
+    expertise: "B2",
+    description: "Žák prošetří platnost zobecnění, že reklamní spoty často využívají genderové stereotypy, analýzou vybraného vzorku a obhajobou závěru podloženého příklady."
+  },
+  {
+    id: "goal_social_network_types_generalization",
+    termId: "term_social_network_types",
+    topicId: "topic_content_genres",
+    label: "Sociální sítě: popiš typy",
+    labelSize: "0.78rem",
+    expertise: "B1",
+    description: "Žák vybere zobecnění o typech sociálních sítí (nikoli jednotlivým faktem) a rozhodnutí doloží dvěma příklady rozdílných platforem a jejich znaků."
+  },
+  {
+    id: "goal_disinformation_generalization",
+    termId: "term_disinformation",
+    topicId: "topic_manipulation_influence",
+    label: "Dezinformace: identifikuj vzorce",
+    expertise: "B1",
+    description: "Žák rozhodne, které tvrzení je platným zobecněním o dezinformacích / fake news / deepfake (nikoli jednotlivým faktem), a volbu doloží dvěma konkrétními příklady."
+  },
+  {
+    id: "goal_disinformation_video_verification",
+    termId: "term_disinformation",
+    topicId: "topic_manipulation_influence",
+    label: "Deepfake video: rozhodni",
+    labelSize: "0.72rem",
+    expertise: "B2",
+    description: "Žák vyřeší problém ověření autenticity virálního videa tak, že na základě generalizace „deepfaky často vykazují nesoulad mimiky, stínů a synchronizace zvuku s obrazem“ posoudí dvě alternativy (pravé vs. podvrh) a rozhodne ANO/NE o použití videa, přičemž uvede alespoň 2 zjištěné příznaky na podporu rozhodnutí."
+  },
+  {
+    id: "goal_manipulation_generalization",
+    termId: "term_manipulation",
+    topicId: "topic_manipulation_influence",
+    label: "Manipulace: dolož techniky",
+    expertise: "B1",
+    description: "Žák vybere zobecnění o manipulaci veřejného mínění (nikoli jednotlivým faktem) a své rozhodnutí podloží dvěma příklady technik."
+  },
+  {
+    id: "goal_influencer_generalization",
+    termId: "term_influencer",
+    topicId: "topic_manipulation_influence",
+    label: "Influenceři: definuj třídu",
+    expertise: "B1",
+    description: "Žák rozhodne, které tvrzení je platným zobecněním o influencerech jako třídě osob (nikoli jednotlivým faktem), a volbu podloží dvěma příklady."
+  },
+  {
+    id: "goal_clickbait_generalization",
+    termId: "term_clickbait",
+    topicId: "topic_manipulation_influence",
+    label: "Clickbait: rozpoznej znaky",
+    expertise: "B1",
+    description: "Žák vybere zobecnění o clickbaitu (nikoli jednotlivým faktem) a své rozhodnutí podloží dvěma příklady nadpisů."
+  },
+  {
+    id: "goal_clickbait_source_selection",
+    termId: "term_clickbait",
+    topicId: "topic_manipulation_influence",
+    label: "Clickbait: filtruj zdroje",
+    labelSize: "0.72rem",
+    expertise: "B2",
+    description: "Žák vyřeší problém výběru spolehlivých článků pro referát tak, že na základě generalizace „clickbaitové titulky často používají senzacechtivá, neúplná či přehnaná tvrzení“ správně identifikuje a vyřadí alespoň 3 z 5 předložených clickbaitových titulků a ponechá 2 vhodné zdroje."
+  },
+  {
+    id: "goal_clickbait_emotive_experiment",
+    termId: "term_clickbait",
+    topicId: "topic_manipulation_influence",
+    label: "Clickbait: experiment s emocemi",
+    labelSize: "0.72rem",
+    expertise: "B2",
+    description: "Žák formuluje předpověď a navrhne, provede a vyhodnotí jednoduchý experiment, kterým ověří zobecnění, že clickbaitové titulky častěji používají emotivní slova než běžné zpravodajské titulky."
+  },
+  {
+    id: "goal_clickbait_question_audit",
+    termId: "term_clickbait",
+    topicId: "topic_manipulation_influence",
+    label: "Clickbait: analyzuj formu",
+    labelSize: "0.72rem",
+    expertise: "B2",
+    description: "Žák vyšetří a ověří zobecnění, že clickbaitové nadpisy častěji používají otázky nebo přehánění než informativní nadpisy, tím že porovná vzorek nadpisů a předloží logicky zdůvodněný závěr."
+  },
+  {
+    id: "goal_dark_posting_generalization",
+    termId: "term_dark_posting",
+    topicId: "topic_manipulation_influence",
+    label: "Dark posting: popiš scénáře",
+    expertise: "B1",
+    description: "Žák rozhodne, které tvrzení je platným zobecněním o dark postingu (nikoli jednotlivým faktem), a volbu zdůvodní dvěma příklady jeho použití."
+  },
+  {
+    id: "goal_echo_chamber_generalization",
+    termId: "term_echo_chamber",
+    topicId: "topic_manipulation_influence",
+    label: "Filtrační bubliny: ukaž jevy",
+    expertise: "B1",
+    description: "Žák vybere zobecnění o echo chamberu / sociální (filtrační) bublině (nikoli jednotlivým faktem) a rozhodnutí doloží dvěma příklady jevů."
+  },
+  {
+    id: "goal_hybrid_warfare_generalization",
+    termId: "term_hybrid_warfare",
+    topicId: "topic_manipulation_influence",
+    label: "Hybridní válka: vysvětli taktiky",
+    expertise: "B1",
+    description: "Žák rozhodne, které tvrzení je zobecněním o hybridní válce (nikoli jednotlivým faktem), a volbu podpoří dvěma příklady taktik."
+  },
+  {
+    id: "goal_microtargeting_generalization",
+    termId: "term_microtargeting",
+    topicId: "topic_manipulation_influence",
+    label: "Mikrocilení: ukaž kampaně",
+    expertise: "B1",
+    description: "Žák vybere platné zobecnění o cílovém publiku a mikrocilení (nikoli jednotlivým faktem) a své rozhodnutí doloží dvěma příklady kampaní."
+  },
+  {
+    id: "goal_critical_thinking_generalization",
+    termId: "term_critical_thinking",
+    topicId: "topic_critical_verification",
+    label: "Kritické myšlení: popiš proces",
+    expertise: "B1",
+    description: "Žák vybere platné zobecnění o kritickém myšlení jako kognitivním procesu (nikoli jednotlivým faktem) a rozhodnutí doloží dvěma příklady situací."
+  },
+  {
+    id: "goal_fact_checking_generalization",
+    termId: "term_fact_checking",
+    topicId: "topic_critical_verification",
+    label: "Fact-checking: popiš postupy",
+    expertise: "B1",
+    description: "Žák vybere zobecnění o zdrojích informací a fact-checkingu (nikoli jednotlivým faktem) a své rozhodnutí doloží dvěma příklady postupů."
+  },
+  {
+    id: "goal_fact_checking_link_audit",
+    termId: "term_fact_checking",
+    topicId: "topic_critical_verification",
+    label: "Fact-checking: počítej odkazy",
+    labelSize: "0.72rem",
+    expertise: "B2",
+    description: "Žák vyšetří zobecnění, že články ze spolehlivých zdrojů častěji odkazují na primární zdroje než články z pochybných webů, tím že sestaví vzorek, spočítá výskyt odkazů a předloží logicky zdůvodněné zjištění."
+  },
+  {
+    id: "goal_algorithm_generalization",
+    termId: "term_algorithm",
+    topicId: "topic_critical_verification",
+    label: "Algoritmy: popiš chování",
+    expertise: "B1",
+    description: "Žák vybere zobecnění o algoritmech (nikoli jednotlivým faktem) a rozhodnutí doloží dvěma příklady jejich chování v praxi."
+  },
+  {
+    id: "goal_algorithm_recommendations",
+    termId: "term_algorithm",
+    topicId: "topic_critical_verification",
+    label: "Algoritmy: ověř doporučení",
+    labelSize: "0.74rem",
+    expertise: "B2",
+    description: "Žák formuluje předpověď a navrhne, provede a vyhodnotí experiment, kterým ověří zobecnění, že algoritmus doporučování na sociální síti zvyšuje podíl obsahu k tématům, s nimiž uživatel více interaguje."
+  },
+  {
+    id: "goal_logical_fallacy_generalization",
+    termId: "term_logical_fallacy",
+    topicId: "topic_critical_verification",
+    label: "Logické klamy: rozpoznej vzorce",
+    expertise: "B1",
+    description: "Žák rozhodne, které tvrzení je zobecněním o logických klamech (nikoli jednotlivým faktem), a volbu zdůvodní dvěma příklady klamů."
+  },
+  {
+    id: "goal_logical_fallacy_article_fix",
+    termId: "term_logical_fallacy",
+    topicId: "topic_critical_verification",
+    label: "Logický klam: oprav závěr",
+    labelSize: "0.74rem",
+    expertise: "B2",
+    description: "Žák vyřeší problém chybného závěru v krátkém článku tak, že na základě generalizace „logické klamy jsou opakující se vzorce chybného usuzování“ správně určí 1 přítomný klam ze 3 nabízených možností a navrhne opravu jednou větou, která klam odstraní."
+  }
+];
+
+const topicGoalCounts = atomicGoals.reduce((map, goal) => {
+  map.set(goal.topicId, (map.get(goal.topicId) || 0) + 1);
+  return map;
+}, new Map());
+
+const topicNodes = baseTopics.map((topic) => ({
+  ...topic,
+  lessons: `${topicGoalCounts.get(topic.id) || 0} atomic goals`
+}));
+
+const goalNodes = atomicGoals.map((goal) => ({
+  id: goal.id,
+  type: "goal",
+  label: goal.label,
+  expertise: goal.expertise,
+  description: goal.description,
+  labelSize: goal.labelSize
+}));
+
+const termNodes = Object.entries(termLibrary).map(([termId, term]) => ({
+  id: termId,
+  type: "term",
+  label: term.label,
+  expertise: term.expertise,
+  description: term.description,
+  labelSize: term.labelSize
+}));
+
+const nodes = [areaNode, ...topicNodes, ...goalNodes, ...termNodes];
+
+const edges = [
+  ...topicNodes.map((topic, index) => ({
+    id: `edge_area_topic_${index + 1}`,
+    source: areaNode.id,
+    target: topic.id,
+    relation: "contains"
+  })),
+  ...atomicGoals.map((goal) => ({
+    id: `edge_topic_goal_${goal.id}`,
+    source: goal.topicId,
+    target: goal.id,
+    relation: "contains"
+  })),
+  ...atomicGoals.map((goal) => ({
+    id: `edge_term_goal_${goal.id}`,
+    source: goal.termId,
+    target: goal.id,
+    relation: "relates"
+  }))
+];
+
+const conceptData = { nodes, edges };

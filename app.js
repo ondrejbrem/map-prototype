@@ -140,10 +140,11 @@
       group.appendChild(circle);
 
       const label = document.createElementNS(ns, "text");
-      label.classList.add("area-label");
+      label.classList.add("node-label", "node-label--area", "area-label");
       label.setAttribute("x", node.x);
       label.setAttribute("y", node.y - (node.radius || 260) + 24);
       label.textContent = node.label;
+      applyLabelSize(label, node);
       group.appendChild(label);
 
       attachNodeHandlers(group, node.id);
@@ -165,14 +166,15 @@
         group.appendChild(circle);
 
         const label = document.createElementNS(ns, "text");
-        label.classList.add("topic-label");
+        label.classList.add("node-label", "node-label--topic", "topic-label");
         label.setAttribute("x", node.x);
         label.setAttribute("y", node.y);
         label.textContent = node.label;
+        applyLabelSize(label, node);
         group.appendChild(label);
 
         const meta = document.createElementNS(ns, "text");
-        meta.classList.add("topic-label");
+        meta.classList.add("topic-label", "topic-meta");
         meta.setAttribute("x", node.x);
         meta.setAttribute("y", node.y + 20);
         meta.textContent = `${node.expertise || ""} ${node.lessons || ""}`.trim();
@@ -239,6 +241,8 @@
     text.setAttribute("y", node.y + 42);
     text.setAttribute("text-anchor", "middle");
     text.textContent = node.label;
+    text.classList.add("node-label", "node-label--goal");
+    applyLabelSize(text, node);
     group.appendChild(text);
   }
 
@@ -259,6 +263,8 @@
     text.setAttribute("y", node.y + 4);
     text.setAttribute("text-anchor", "middle");
     text.textContent = node.label;
+    text.classList.add("node-label", "node-label--activity");
+    applyLabelSize(text, node);
     group.appendChild(text);
   }
 
@@ -279,7 +285,17 @@
     text.setAttribute("y", node.y + size + 18);
     text.setAttribute("text-anchor", "middle");
     text.textContent = node.label;
+    text.classList.add("node-label", "node-label--term");
+    applyLabelSize(text, node);
     group.appendChild(text);
+  }
+
+  function applyLabelSize(element, node) {
+    if (!node || !node.labelSize) {
+      return;
+    }
+    const value = typeof node.labelSize === "number" ? `${node.labelSize}px` : node.labelSize;
+    element.style.fontSize = value;
   }
 
   function attachNodeHandlers(element, nodeId) {
