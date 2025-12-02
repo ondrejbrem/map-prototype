@@ -430,50 +430,120 @@ const topicGoalCounts = atomicGoals.reduce((map, goal) => {
   return map;
 }, new Map());
 
-const topicNodes = baseTopics.map((topic) => ({
-  ...topic,
-  lessons: `${topicGoalCounts.get(topic.id) || 0} atomic goals`
-}));
-
-const goalNodes = atomicGoals.map((goal) => ({
-  id: goal.id,
-  type: "goal",
-  label: goal.label,
-  expertise: goal.expertise,
-  description: goal.description,
-  labelSize: goal.labelSize
+const topicNodes = baseTopics.map((topic, index) => ({
+  id: topic.id,
+  type: "topic",
+  label: topic.label,
+  discipline: "Mediální výchova",
+  level: topic.expertise,
+  expertise: topic.expertise,
+  order: index + 1,
+  parentTopicId: null,
+  description: topic.description,
+  lessons: `${topicGoalCounts.get(topic.id) || 0} atomic goals`,
+  x: topic.x,
+  y: topic.y,
+  radius: topic.radius,
+  labelSize: topic.labelSize
 }));
 
 const termNodes = Object.entries(termLibrary).map(([termId, term]) => ({
   id: termId,
   type: "term",
   label: term.label,
-  expertise: term.expertise,
-  description: term.description,
+  definition: term.description,
+  synonyms: [],
+  category: "conceptual",
+  language: "cs",
   labelSize: term.labelSize
 }));
 
-const nodes = [areaNode, ...topicNodes, ...goalNodes, ...termNodes];
+const atomicGoalNodes = atomicGoals.map((goal, index) => ({
+  id: goal.id,
+  type: "atomicGoal",
+  label: goal.label,
+  fullText: goal.description,
+  expertise: goal.expertise,
+  bloomsLevel: goal.bloomsLevel || "Apply",
+  relatedTerms: goal.termId ? [goal.termId] : [],
+  topicId: goal.topicId,
+  sequence: index + 1,
+  labelSize: goal.labelSize
+}));
 
-const edges = [
-  ...topicNodes.map((topic, index) => ({
-    id: `edge_area_topic_${index + 1}`,
-    source: areaNode.id,
-    target: topic.id,
-    relation: "contains"
-  })),
-  ...atomicGoals.map((goal) => ({
-    id: `edge_topic_goal_${goal.id}`,
-    source: goal.topicId,
-    target: goal.id,
-    relation: "contains"
-  })),
-  ...atomicGoals.map((goal) => ({
-    id: `edge_term_goal_${goal.id}`,
-    source: goal.termId,
-    target: goal.id,
-    relation: "relates"
+const educationalGoalNodes = topicNodes.map((topic) => {
+  const atomicIds = atomicGoalNodes.filter((goal) => goal.topicId === topic.id).map((goal) => goal.id);
+  return {
+    id: `edu_goal_${topic.id}`,
+    type: "educationalGoal",
+    label: `${topic.label} – syntéza`,
+    bloomsLevel: "Evaluate",
+    topicId: topic.id,
+    atomicGoalIds: atomicIds
+  };
+});
+
+const activityNodes = atomicGoalNodes.map((goal, index) => ({
+  id: `activity_${goal.id}`,
+  type: "activity",
+  label: `Ověř: ${goal.label}`,
+  expertise: goal.expertise,
+  activityType: "exercise",
+  content: {
+    prompt: goal.fullText,
+    format: "classification",
+    instructions: "Popiš kroky, jak bys cíl ověřil v praxi."
+  },
+  goalId: goal.id
+}));
+
+const validateEdges = activityNodes.map((activity, index) => ({
+  id: `edge_validates_${index + 1}`,
+  source: activity.id,
+  target: activity.goalId,
+  relation: "validates"
+}));
+
+const requiresUnderstandingEdges = atomicGoalNodes.flatMap((goal) =>
+  (goal.relatedTerms || []).map((termId, index) => ({
+    id: `edge_requires_${goal.id}_${termId}_${index}`,
+    source: goal.id,
+    target: termId,
+    relation: "requiresUnderstanding"
   }))
-];
+);
+
+const aggregateEdges = educationalGoalNodes.flatMap((eduGoal) =>
+  eduGoal.atomicGoalIds.map((goalId, index) => ({
+    id: `edge_aggregates_${eduGoal.id}_${index + 1}`,
+    source: eduGoal.id,
+    target: goalId,
+    relation: "aggregates"
+  }))
+);
+
+const isPartOfEdges = educationalGoalNodes.map((eduGoal, index) => ({
+  id: `edge_ispartof_${index + 1}`,
+  source: eduGoal.id,
+  target: eduGoal.topicId,
+  relation: "isPartOf"
+}));
+
+const exemplifyEdges = activityNodes.flatMap((activity, index) => {
+  const goal = atomicGoalNodes.find((g) => g.id === activity.goalId);
+  return (goal?.relatedTerms || []).map((termId) => ({
+    id: `edge_exemplifies_${activity.id}_${termId}`,
+    source: activity.id,
+    target: termId,
+    relation: "exemplifies"
+  }));
+});
+
+activityNodes.forEach((activity) => {
+  delete activity.goalId;
+});
+
+const nodes = [...topicNodes, ...educationalGoalNodes, ...atomicGoalNodes, ...activityNodes, ...termNodes];
+const edges = [...validateEdges, ...requiresUnderstandingEdges, ...aggregateEdges, ...isPartOfEdges, ...exemplifyEdges];
 
 const conceptData = { nodes, edges };

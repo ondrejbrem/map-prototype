@@ -1,65 +1,75 @@
 (() => {
-  if (typeof cytoscape !== "undefined") {
-    initCytoscapeMap();
-    return;
-  }
-
   const svg = document.getElementById("concept-map");
   const infoPanel = document.getElementById("info-panel");
   const zoomReadout = document.getElementById("zoom-readout");
   const typeFilterEl = document.getElementById("type-filter");
   const expertiseFilterEl = document.getElementById("expertise-filter");
 
-  if (!svg || !conceptData) {
-    console.warn("Concept map: missing SVG or data");
-    return;
-  }
+  fetch("data.json")
+    .then((response) => response.json())
+    .then((payload) => {
+      const conceptData = {
+        nodes: payload.nodes ?? [],
+        edges: payload.edges ?? [],
+        metadata: payload.metadata ?? {}
+      };
+      if (typeof cytoscape !== "undefined") {
+        initCytoscapeMap(conceptData);
+      } else {
+        initSvgMap(conceptData);
+      }
+    })
+    .catch((error) => {
+      console.error("Failed to load concept data:", error);
+    });
 
-  const ns = "http://www.w3.org/2000/svg";
-  const expertiseOrder = ["A1", "A2", "B1", "B2", "C1", "C2"];
-  const baseViewBox = { width: 1200, height: 800 };
-  const bounds = { minX: -200, maxX: 1400, minY: -160, maxY: 1000 };
-  const state = {
-    viewBox: { x: 0, y: 0, width: baseViewBox.width, height: baseViewBox.height },
-    minWidth: 420,
-    maxWidth: 2000,
-    panSession: null,
-    selectedNode: null
-  };
-  let viewBoxNeedsUpdate = false;
+  function initSvgMap(conceptData) {
+    const ns = "http://www.w3.org/2000/svg";
+    const expertiseOrder = ["A1", "A2", "B1", "B2", "C1", "C2"];
+    const baseViewBox = { width: 1200, height: 800 };
+    const bounds = { minX: -200, maxX: 1400, minY: -160, maxY: 1000 };
+    const state = {
+      viewBox: { x: 0, y: 0, width: baseViewBox.width, height: baseViewBox.height },
+      minWidth: 420,
+      maxWidth: 2000,
+      panSession: null,
+      selectedNode: null
+    };
+    let viewBoxNeedsUpdate = false;
 
-  const filters = {
-    types: new Set(["area", "topic", "goal", "activity", "term"]),
-    expertise: new Set()
-  };
+    const filters = {
+      types: new Set(["topic", "educationalGoal", "atomicGoal", "activity", "term"]),
+      expertise: new Set()
+    };
 
-  const nodes = conceptData.nodes.map((node) => ({
-    ...node,
-    levels: extractLevels(node.expertise)
-  }));
-  const nodesById = new Map(nodes.map((node) => [node.id, node]));
+    const nodes = conceptData.nodes.map((node) => ({
+      ...node,
+      levels: extractLevels(node.expertise),
+      detailLevel: detailLevelForType(node.type)
+    }));
+    const nodesById = new Map(nodes.map((node) => [node.id, node]));
 
-  const edges = conceptData.edges ?? [];
-  const edgesById = new Map(edges.map((edge) => [edge.id, edge]));
+    const edges = normalizeEdges(conceptData.edges ?? []);
+    const edgesById = new Map(edges.map((edge) => [edge.id, edge]));
 
-  layoutNodes();
+    applyLegacyLayout(nodes, edges, nodesById);
 
-  const adjacency = new Map();
-  edges.forEach((edge) => {
-    registerAdjacency(edge.source, edge);
-    registerAdjacency(edge.target, edge);
-  });
+    const adjacency = new Map();
+    edges.forEach((edge) => {
+      registerAdjacency(edge.source, edge);
+      registerAdjacency(edge.target, edge);
+    });
 
-  const nodeElements = new Map();
-  const edgeElements = new Map();
-  const nodeVisibility = new Map();
+    const nodeElements = new Map();
+    const edgeElements = new Map();
+    const nodeVisibility = new Map();
 
-  initFilters();
-  renderGraph();
-  initInteractions();
-  applyFilters();
-  applyViewBox();
-  renderInfoPanel(null);
+    initFilters();
+    renderGraph();
+    initInteractions();
+    applyFilters();
+    applyViewBox();
+    renderInfoPanel(null);
 
   function initFilters() {
     const levelOptions = Array.from(
@@ -75,9 +85,9 @@
     levelOptions.forEach((level) => filters.expertise.add(level));
 
     createChips(typeFilterEl, [
-      { key: "area", label: "Areas" },
       { key: "topic", label: "Topics" },
-      { key: "goal", label: "Goals" },
+      { key: "educationalGoal", label: "Educational goals" },
+      { key: "atomicGoal", label: "Atomic goals" },
       { key: "activity", label: "Activities" },
       { key: "term", label: "Terms" }
     ], filters.types);
@@ -115,8 +125,6 @@
   }
 
   function renderGraph() {
-    const areaLayer = document.createElementNS(ns, "g");
-    areaLayer.classList.add("layer", "layer-areas");
     const topicLayer = document.createElementNS(ns, "g");
     topicLayer.classList.add("layer", "layer-topics");
     const linkLayer = document.createElementNS(ns, "g");
@@ -124,54 +132,25 @@
     const nodeLayer = document.createElementNS(ns, "g");
     nodeLayer.classList.add("layer", "layer-nodes");
 
-    svg.appendChild(areaLayer);
     svg.appendChild(topicLayer);
     svg.appendChild(linkLayer);
     svg.appendChild(nodeLayer);
 
     nodes.forEach((node) => {
-      if (node.type !== "area") {
-        return;
-      }
-      const group = document.createElementNS(ns, "g");
-      group.classList.add("node", "node--area", "detail-wide");
-      group.dataset.id = node.id;
-
-      const circle = document.createElementNS(ns, "circle");
-      circle.setAttribute("cx", node.x);
-      circle.setAttribute("cy", node.y);
-      circle.setAttribute("r", node.radius || 260);
-      circle.setAttribute("filter", "url(#soft-shadow)");
-      group.appendChild(circle);
-
-      const label = document.createElementNS(ns, "text");
-      label.classList.add("node-label", "node-label--area", "area-label");
-      label.setAttribute("x", node.x);
-      label.setAttribute("y", node.y - (node.radius || 260) + 24);
-      label.textContent = node.label;
-      applyLabelSize(label, node);
-      group.appendChild(label);
-
-      attachNodeHandlers(group, node.id);
-      areaLayer.appendChild(group);
-      nodeElements.set(node.id, group);
-    });
-
-    nodes.forEach((node) => {
-      if (node.type === "topic") {
+      if (node.type === "topic" || node.type === "educationalGoal") {
         const group = document.createElementNS(ns, "g");
-        group.classList.add("node", "node--topic", "detail-wide");
+        group.classList.add("node", `node--${node.type}`, "detail-wide");
         group.dataset.id = node.id;
 
         const circle = document.createElementNS(ns, "circle");
         circle.setAttribute("cx", node.x);
         circle.setAttribute("cy", node.y);
-        circle.setAttribute("r", node.radius || 120);
+        circle.setAttribute("r", node.radius || (node.type === "topic" ? 120 : 80));
         circle.setAttribute("filter", "url(#soft-shadow)");
         group.appendChild(circle);
 
         const label = document.createElementNS(ns, "text");
-        label.classList.add("node-label", "node-label--topic", "topic-label");
+        label.classList.add("node-label", node.type === "topic" ? "node-label--topic" : "node-label--educationalGoal", "topic-label");
         label.setAttribute("x", node.x);
         label.setAttribute("y", node.y);
         label.textContent = node.label;
@@ -182,7 +161,8 @@
         meta.classList.add("topic-label", "topic-meta");
         meta.setAttribute("x", node.x);
         meta.setAttribute("y", node.y + 20);
-        meta.textContent = `${node.expertise || ""} ${node.lessons || ""}`.trim();
+        const detail = node.type === "topic" ? `${node.level || ""} ${node.lessons || ""}`.trim() : `Bloom ${node.bloomsLevel || "Understand"}`;
+        meta.textContent = detail;
         meta.setAttribute("fill", "rgba(255,255,255,0.6)");
         group.appendChild(meta);
 
@@ -213,15 +193,15 @@
     });
 
     nodes.forEach((node) => {
-      if (node.type === "topic" || node.type === "area") {
+      if (node.type === "topic" || node.type === "educationalGoal") {
         return;
       }
       const group = document.createElementNS(ns, "g");
       group.classList.add("node", `node--${node.type}`, detailClassForNode(node.type));
       group.dataset.id = node.id;
 
-      if (node.type === "goal") {
-        drawGoal(group, node);
+      if (node.type === "atomicGoal") {
+        drawAtomicGoal(group, node);
       } else if (node.type === "activity") {
         drawActivity(group, node);
       } else if (node.type === "term") {
@@ -234,7 +214,7 @@
     });
   }
 
-  function drawGoal(group, node) {
+  function drawAtomicGoal(group, node) {
     const circle = document.createElementNS(ns, "circle");
     circle.setAttribute("cx", node.x);
     circle.setAttribute("cy", node.y);
@@ -533,9 +513,9 @@
       wrapper.className = "info-panel__empty";
       wrapper.innerHTML = `
         <h2>Select a node</h2>
-        <p>Highlight an area, topic, goal, term, or activity to see how it supports the path to mastery.</p>
+        <p>Highlight a topic, educational goal, atomic goal, term, or activity to see how it supports the path to mastery.</p>
         <ul>
-          <li>Zoom out to compare overlapping areas and topics.</li>
+          <li>Zoom out to compare topics and clustered educational goals.</li>
           <li>Zoom in for atomic goals, activities, and key terms.</li>
           <li>Filters help surface the right expertise band.</li>
         </ul>
@@ -561,8 +541,14 @@
     if (node.expertise) {
       metaParts.push(`Expertise ${node.expertise}`);
     }
+    if (node.level && node.type === "topic") {
+      metaParts.push(`Level ${node.level}`);
+    }
     if (node.lessons) {
       metaParts.push(node.lessons);
+    }
+    if (node.bloomsLevel) {
+      metaParts.push(`Bloom ${node.bloomsLevel}`);
     }
     if (node.activityType) {
       metaParts.push(`${capitalize(node.activityType)} activity`);
@@ -574,11 +560,7 @@
 
     infoPanel.appendChild(header);
 
-    if (node.description) {
-      const desc = document.createElement("p");
-      desc.textContent = node.description;
-      infoPanel.appendChild(desc);
-    }
+    renderNodeBody(infoPanel, node);
 
     const connections = adjacency.get(node.id) ?? [];
     if (connections.length) {
@@ -606,20 +588,63 @@
     }
   }
 
+  function renderNodeBody(container, node) {
+    if (node.type === "atomicGoal") {
+      const desc = document.createElement("p");
+      desc.textContent = node.fullText || node.description || "";
+      container.appendChild(desc);
+      if (node.relatedTerms?.length) {
+        const related = document.createElement("p");
+        related.textContent = `Terms: ${node.relatedTerms.map((termId) => nodesById.get(termId)?.label).filter(Boolean).join(", ")}`;
+        container.appendChild(related);
+      }
+      return;
+    }
+    if (node.type === "term") {
+      const desc = document.createElement("p");
+      desc.textContent = node.definition || node.description || "";
+      container.appendChild(desc);
+      if (node.synonyms?.length) {
+        const synonyms = document.createElement("p");
+        synonyms.textContent = `Synonyma: ${node.synonyms.join(", ")}`;
+        container.appendChild(synonyms);
+      }
+      return;
+    }
+    if (node.type === "activity") {
+      const desc = document.createElement("p");
+      desc.textContent = node.content?.prompt || node.description || "";
+      container.appendChild(desc);
+      return;
+    }
+    if (node.type === "educationalGoal") {
+      const desc = document.createElement("p");
+      desc.textContent = `${(node.atomicGoalIds || []).length} atomic goals v tomto klastru.`;
+      container.appendChild(desc);
+      return;
+    }
+    const desc = document.createElement("p");
+    desc.textContent = node.description || node.fullText || "";
+    if (desc.textContent) {
+      container.appendChild(desc);
+    }
+  }
+
   function describeRelation(node, other, relation) {
     if (relation === "validates") {
       return node.type === "activity" ? "Validates" : other.type === "activity" ? "Validated by" : "Connected";
     }
-    if (relation === "contains") {
-      if ((node.type === "area" && other.type !== "area") || (node.type === "topic" && other.type !== "topic")) {
-        return "Includes";
-      }
-      if ((other.type === "area" && node.type !== "area") || (other.type === "topic" && node.type !== "topic")) {
-        return "Part of";
-      }
+    if (relation === "requiresUnderstanding") {
+      return node.type === "atomicGoal" ? "Requires" : "Supports";
     }
-    if (relation === "relates") {
-      return "Relates to";
+    if (relation === "aggregates") {
+      return node.type === "educationalGoal" ? "Aggregates" : "Part of cluster";
+    }
+    if (relation === "isPartOf") {
+      return node.type === "educationalGoal" ? "Belongs to" : "Contains";
+    }
+    if (relation === "exemplifies") {
+      return node.type === "activity" ? "Exemplifies" : "Illustrated by";
     }
     return "Connected to";
   }
@@ -652,21 +677,39 @@
     return matches ? matches : [];
   }
 
+  function detailLevelForType(type) {
+    if (type === "activity" || type === "term") {
+      return "close";
+    }
+    if (type === "atomicGoal") {
+      return "mid";
+    }
+    return "wide";
+  }
+
   function detailClassForNode(type) {
-    if (type === "activity") {
-      return "detail-close";
+    return `detail-${detailLevelForType(type)}`;
+  }
+
+  function detailLevelRank(level) {
+    if (level === "wide") {
+      return 0;
     }
-    if (type === "goal" || type === "term") {
-      return "detail-mid";
+    if (level === "mid") {
+      return 1;
     }
-    return "detail-wide";
+    return 2;
+  }
+
+  function canShowDetailLevel(nodeLevel = "close", currentLevel = "close") {
+    return detailLevelRank(nodeLevel) <= detailLevelRank(currentLevel);
   }
 
   function detailClassForEdge(relation) {
-    if (relation === "validates") {
+    if (relation === "validates" || relation === "exemplifies") {
       return "close";
     }
-    if (relation === "relates") {
+    if (relation === "requiresUnderstanding") {
       return "mid";
     }
     return "wide";
@@ -681,150 +724,43 @@
   }
 
   function isStructuralEdge(source, target, relation) {
-    if (relation !== "contains") {
-      return false;
+    if (relation === "isPartOf" || relation === "aggregates") {
+      return true;
     }
-    const pair = new Set([source.type, target.type]);
-    const isAreaTopic = pair.has("area") && pair.has("topic");
-    const isTopicGoal = pair.has("topic") && pair.has("goal");
-    return isAreaTopic || isTopicGoal;
+    return false;
   }
 
-  function layoutNodes() {
-    const topicGoals = new Map();
-    const goalPrimaryTopic = new Map();
-    const goalTerms = new Map();
-    const goalActivities = new Map();
-
-    edges.forEach((edge) => {
-      const source = nodesById.get(edge.source);
-      const target = nodesById.get(edge.target);
-      if (!source || !target) {
-        return;
-      }
-      if (edge.relation === "contains" && source.type === "topic" && target.type === "goal") {
-        registerGoalToTopic(target.id, source.id);
-      } else if (edge.relation === "contains" && target.type === "topic" && source.type === "goal") {
-        registerGoalToTopic(source.id, target.id);
-      } else if (edge.relation === "relates") {
-        const goalId = source.type === "goal" ? source.id : target.type === "goal" ? target.id : null;
-        const termId = source.type === "term" ? source.id : target.type === "term" ? target.id : null;
-        if (goalId && termId) {
-          if (!goalTerms.has(goalId)) {
-            goalTerms.set(goalId, []);
-          }
-          goalTerms.get(goalId).push(termId);
-        }
-      } else if (edge.relation === "validates") {
-        const goalId = source.type === "goal" ? source.id : target.type === "goal" ? target.id : null;
-        const activityId = source.type === "activity" ? source.id : target.type === "activity" ? target.id : null;
-        if (goalId && activityId) {
-          if (!goalActivities.has(goalId)) {
-            goalActivities.set(goalId, []);
-          }
-          goalActivities.get(goalId).push(activityId);
-        }
-      }
-    });
-
-    function registerGoalToTopic(goalId, topicId) {
-      if (!goalPrimaryTopic.has(goalId)) {
-        goalPrimaryTopic.set(goalId, topicId);
-      }
-      if (!topicGoals.has(topicId)) {
-        topicGoals.set(topicId, []);
-      }
-      if (!topicGoals.get(topicId).includes(goalId)) {
-        topicGoals.get(topicId).push(goalId);
-      }
-    }
-
-    const goalAngles = new Map();
-    topicGoals.forEach((goalIds, topicId) => {
-      const topic = nodesById.get(topicId);
-      if (!topic || goalIds.length === 0) {
-        return;
-      }
-      const goalRadius = Math.max(60, (topic.radius || 110) - 35);
-      const startAngle = -Math.PI / 2;
-      const step = (2 * Math.PI) / goalIds.length;
-      goalIds.forEach((goalId, index) => {
-        const angle = startAngle + index * step;
-        const goal = nodesById.get(goalId);
-        if (!goal) {
-          return;
-        }
-        goal.x = topic.x + goalRadius * Math.cos(angle);
-        goal.y = topic.y + goalRadius * Math.sin(angle);
-        goalAngles.set(goalId, angle);
-      });
-    });
-
-    goalTerms.forEach((termIds, goalId) => {
-      const angle = goalAngles.get(goalId);
-      const topicId = goalPrimaryTopic.get(goalId);
-      const topic = topicId ? nodesById.get(topicId) : null;
-      if (!topic || angle == null) {
-        return;
-      }
-      const baseRadius = (topic.radius || 110) + 35;
-      termIds.forEach((termId, index) => {
-        const term = nodesById.get(termId);
-        if (!term) {
-          return;
-        }
-        const offsetAngle = angle + (index % 2 === 0 ? 1 : -1) * 0.25 * Math.ceil(index / 2);
-        const radius = baseRadius + index * 22;
-        term.x = topic.x + radius * Math.cos(offsetAngle);
-        term.y = topic.y + radius * Math.sin(offsetAngle);
-      });
-    });
-
-    goalActivities.forEach((activityIds, goalId) => {
-      const angle = goalAngles.get(goalId);
-      const topicId = goalPrimaryTopic.get(goalId);
-      const topic = topicId ? nodesById.get(topicId) : null;
-      if (!topic || angle == null) {
-        return;
-      }
-      const baseRadius = (topic.radius || 110) + 95;
-      activityIds.forEach((activityId, index) => {
-        const activity = nodesById.get(activityId);
-        if (!activity) {
-          return;
-        }
-        const offsetAngle = angle + ((index % 2 === 0 ? 1 : -1) * 0.35 * Math.ceil(index / 2));
-        const radius = baseRadius + index * 30;
-        activity.x = topic.x + radius * Math.cos(offsetAngle);
-        activity.y = topic.y + radius * Math.sin(offsetAngle);
-      });
-    });
+  function normalizeEdges(edgeList) {
+    return edgeList.map((edge) => ({
+      ...edge,
+      relation: edge.relation || edge.type || edge.relationship || "related"
+    }));
   }
 
-  function initCytoscapeMap() {
+  function initCytoscapeMap(conceptData) {
     const container = document.getElementById("concept-map");
     const infoPanel = document.getElementById("info-panel");
     const zoomReadout = document.getElementById("zoom-readout");
     const typeFilterEl = document.getElementById("type-filter");
     const expertiseFilterEl = document.getElementById("expertise-filter");
 
-    const hasData = typeof conceptData !== "undefined";
-    if (!container || !infoPanel || !hasData) {
+    if (!container || !infoPanel || !conceptData) {
       console.warn("Cytoscape concept map: missing container or data");
       return;
     }
 
     const expertiseOrder = ["A1", "A2", "B1", "B2", "C1", "C2"];
     const filters = {
-      types: new Set(["area", "topic", "goal", "activity", "term"]),
+      types: new Set(["topic", "educationalGoal", "atomicGoal", "activity", "term"]),
       expertise: new Set()
     };
 
     const nodes = conceptData.nodes.map((node) => ({
       ...node,
-      levels: extractLevels(node.expertise)
+      levels: extractLevels(node.expertise),
+      detailLevel: detailLevelForType(node.type)
     }));
-    const edges = conceptData.edges ?? [];
+    const edges = normalizeEdges(conceptData.edges ?? []);
     const nodesById = new Map(nodes.map((node) => [node.id, node]));
     applyLegacyLayout(nodes, edges, nodesById);
     const adjacency = buildAdjacency(edges);
@@ -841,12 +777,15 @@
       boxSelectionEnabled: false
     });
 
-    cy.fit(cy.nodes(), 30);
+    cy.fit(cy.nodes(), 80);
+    cy.nodes().ungrabify();
     window.addEventListener("resize", () => cy.resize());
 
     const state = {
-      selectedNodeId: null
+      selectedNodeId: null,
+      detailLevel: zoomDetailLevel(cy.zoom())
     };
+    container.dataset.detail = state.detailLevel;
 
     initFilters();
     initInteractions();
@@ -858,22 +797,23 @@
       const nodeElements = nodeList.map((node) => {
         const { width, height, shape } = nodeDimensions(node);
         return {
-          data: {
-            id: node.id,
-            label: node.label,
-            type: node.type,
-            expertise: node.expertise || "",
-            lessons: node.lessons || "",
-            description: node.description || "",
-            activityType: node.activityType || "",
-            width,
-            height,
-            shape
-          },
-          position: { x: node.x || 0, y: node.y || 0 },
-          classes: `node-${node.type}`
-        };
-      });
+        data: {
+          id: node.id,
+          label: node.label,
+          type: node.type,
+          expertise: node.expertise || "",
+          lessons: node.lessons || "",
+          description: node.description || "",
+          activityType: node.activityType || "",
+          detailLevel: node.detailLevel,
+          width,
+          height,
+          shape
+        },
+        position: { x: node.x || 0, y: node.y || 0 },
+        classes: `node-${node.type} detail-${node.detailLevel}`
+      };
+    });
 
       const edgeElements = edgeList.map((edge) => ({
         data: {
@@ -911,16 +851,6 @@
         }
       },
       {
-        selector: "node.node-area",
-        style: {
-          "background-color": "rgba(0,0,0,0)",
-          "border-color": "rgba(138, 200, 255, 0.35)",
-          "font-size": 22,
-          "font-weight": 600,
-          shape: "ellipse"
-        }
-      },
-      {
         selector: "node.node-topic",
         style: {
           "background-color": "rgba(0,0,0,0)",
@@ -930,7 +860,16 @@
         }
       },
       {
-        selector: "node.node-goal",
+        selector: "node.node-educationalGoal",
+        style: {
+          "background-color": "rgba(0,0,0,0)",
+          "border-color": "rgba(138, 200, 255, 0.6)",
+          "font-size": 14,
+          shape: "ellipse"
+        }
+      },
+      {
+        selector: "node.node-atomicGoal",
         style: {
           "background-color": "rgba(0,0,0,0)",
           "border-color": "rgba(126, 224, 255, 0.8)",
@@ -974,10 +913,17 @@
           }
         },
         {
-          selector: ".edge-relates",
+          selector: ".edge-requiresUnderstanding",
           style: {
             "line-style": "dashed",
             "line-color": "rgba(126, 224, 255, 0.55)"
+          }
+        },
+        {
+          selector: ".edge-exemplifies",
+          style: {
+            "line-style": "dashed",
+            "line-color": "rgba(215, 255, 126, 0.6)"
           }
         },
         {
@@ -1022,22 +968,25 @@
     }
 
     function nodeDimensions(node) {
-      if (node.type === "area") {
-        const size = (node.radius || 260) * 2;
-        return { width: size, height: size, shape: "ellipse" };
-      }
       if (node.type === "topic") {
         const size = (node.radius || 120) * 2;
         return { width: size, height: size, shape: "ellipse" };
       }
+      if (node.type === "educationalGoal") {
+        const size = 140;
+        return { width: size, height: size, shape: "ellipse" };
+      }
       if (node.type === "activity") {
-        const width = Math.max(200, (node.label || "").length * 7);
+        const width = Math.max(220, (node.label || "").length * 7);
         return { width, height: 70, shape: "roundrectangle" };
       }
       if (node.type === "term") {
         return { width: 70, height: 70, shape: "diamond" };
       }
-      return { width: 60, height: 60, shape: "ellipse" };
+      if (node.type === "atomicGoal") {
+        return { width: 60, height: 60, shape: "ellipse" };
+      }
+      return { width: 80, height: 80, shape: "ellipse" };
     }
 
     function initFilters() {
@@ -1054,9 +1003,9 @@
       levelOptions.forEach((level) => filters.expertise.add(level));
 
       createChips(typeFilterEl, [
-        { key: "area", label: "Areas" },
         { key: "topic", label: "Topics" },
-        { key: "goal", label: "Goals" },
+        { key: "educationalGoal", label: "Educational goals" },
+        { key: "atomicGoal", label: "Atomic goals" },
         { key: "activity", label: "Activities" },
         { key: "term", label: "Terms" }
       ], filters.types);
@@ -1115,7 +1064,10 @@
         }
       });
 
-      cy.on("zoom", () => updateZoomReadout());
+    cy.on("zoom", () => {
+      updateZoomReadout();
+      updateZoomDetailLevel();
+    });
 
       document.querySelectorAll(".zoom-buttons button").forEach((button) => {
         button.addEventListener("click", () => {
@@ -1141,33 +1093,29 @@
     }
 
     function applyFilters() {
-      nodes.forEach((node) => {
-        const isTypeVisible = filters.types.has(node.type);
-        const matchesExpertise = node.levels.length === 0 || node.levels.some((level) => filters.expertise.has(level));
-        const visible = isTypeVisible && matchesExpertise;
-        const cyNode = cy.getElementById(node.id);
-        if (cyNode.empty()) {
-          return;
-        }
-        if (visible) {
-          cyNode.removeClass("is-hidden");
-        } else {
-          cyNode.addClass("is-hidden");
-        }
-      });
+      const currentDetail = state.detailLevel || "close";
+      cy.batch(() => {
+        nodes.forEach((node) => {
+          const isTypeVisible = filters.types.has(node.type);
+          const matchesExpertise = node.levels.length === 0 || node.levels.some((level) => filters.expertise.has(level));
+          const passesDetail = canShowDetailLevel(node.detailLevel, currentDetail);
+          const visible = isTypeVisible && matchesExpertise && passesDetail;
+          const cyNode = cy.getElementById(node.id);
+          if (cyNode.empty()) {
+            return;
+          }
+          cyNode.toggleClass("is-hidden", !visible);
+        });
 
-      edges.forEach((edge) => {
-        const sourceVisible = !cy.getElementById(edge.source).hasClass("is-hidden");
-        const targetVisible = !cy.getElementById(edge.target).hasClass("is-hidden");
-        const cyEdge = cy.getElementById(edge.id);
-        if (cyEdge.empty()) {
-          return;
-        }
-        if (sourceVisible && targetVisible) {
-          cyEdge.removeClass("is-hidden");
-        } else {
-          cyEdge.addClass("is-hidden");
-        }
+        edges.forEach((edge) => {
+          const sourceVisible = !cy.getElementById(edge.source).hasClass("is-hidden");
+          const targetVisible = !cy.getElementById(edge.target).hasClass("is-hidden");
+          const cyEdge = cy.getElementById(edge.id);
+          if (cyEdge.empty()) {
+            return;
+          }
+          cyEdge.toggleClass("is-hidden", !(sourceVisible && targetVisible));
+        });
       });
 
       if (state.selectedNodeId && cy.getElementById(state.selectedNodeId).hasClass("is-hidden")) {
@@ -1214,6 +1162,17 @@
       }
     }
 
+    function updateZoomDetailLevel() {
+      const next = zoomDetailLevel(cy.zoom());
+      if (state.detailLevel === next) {
+        return;
+      }
+      state.detailLevel = next;
+      container.dataset.detail = next;
+      applyFilters();
+    }
+
+
     function renderInfoPanel(node) {
       infoPanel.innerHTML = "";
       if (!node) {
@@ -1221,12 +1180,12 @@
         wrapper.className = "info-panel__empty";
         wrapper.innerHTML = `
           <h2>Select a node</h2>
-          <p>Highlight an area, topic, goal, term, or activity to see how it supports the path to mastery.</p>
-          <ul>
-            <li>Zoom out to compare overlapping areas and topics.</li>
-            <li>Zoom in for atomic goals, activities, and key terms.</li>
-            <li>Filters help surface the right expertise band.</li>
-          </ul>
+        <p>Highlight a topic, educational goal, atomic goal, term, or activity to see how it supports the path to mastery.</p>
+        <ul>
+          <li>Zoom out to compare topics and clustered educational goals.</li>
+          <li>Zoom in for atomic goals, activities, and key terms.</li>
+          <li>Filters help surface the right expertise band.</li>
+        </ul>
         `;
         infoPanel.appendChild(wrapper);
         return;
@@ -1248,11 +1207,17 @@
       if (node.expertise) {
         metaParts.push(`Expertise ${node.expertise}`);
       }
+      if (node.level && node.type === "topic") {
+        metaParts.push(`Level ${node.level}`);
+      }
       if (node.lessons) {
         metaParts.push(node.lessons);
       }
       if (node.activityType) {
         metaParts.push(`${capitalize(node.activityType)} activity`);
+      }
+      if (node.bloomsLevel) {
+        metaParts.push(`Bloom ${node.bloomsLevel}`);
       }
       if (metaParts.length) {
         const meta = document.createElement("div");
@@ -1263,11 +1228,7 @@
 
       infoPanel.appendChild(header);
 
-      if (node.description) {
-        const desc = document.createElement("p");
-        desc.textContent = node.description;
-        infoPanel.appendChild(desc);
-      }
+      renderNodeBody(infoPanel, node);
 
       const connections = adjacency.get(node.id) ?? [];
       if (connections.length) {
@@ -1300,16 +1261,17 @@
       if (relation === "validates") {
         return node.type === "activity" ? "Validates" : other.type === "activity" ? "Validated by" : "Connected";
       }
-      if (relation === "contains") {
-        if ((node.type === "area" && other.type !== "area") || (node.type === "topic" && other.type !== "topic")) {
-          return "Includes";
-        }
-        if ((other.type === "area" && node.type !== "area") || (other.type === "topic" && node.type !== "topic")) {
-          return "Part of";
-        }
+      if (relation === "requiresUnderstanding") {
+        return node.type === "atomicGoal" ? "Requires" : "Supports";
       }
-      if (relation === "relates") {
-        return "Relates to";
+      if (relation === "aggregates") {
+        return node.type === "educationalGoal" ? "Aggregates" : "Part of cluster";
+      }
+      if (relation === "isPartOf") {
+        return node.type === "educationalGoal" ? "Belongs to" : "Contains";
+      }
+      if (relation === "exemplifies") {
+        return node.type === "activity" ? "Exemplifies" : "Illustrated by";
       }
       return "Connected to";
     }
@@ -1472,6 +1434,16 @@
     function clamp(value, min, max) {
       return Math.min(Math.max(value, min), max);
     }
+  }
+
+  function zoomDetailLevel(zoom) {
+    if (zoom <= 0.6) {
+      return "wide";
+    }
+    if (zoom <= 1.2) {
+      return "mid";
+    }
+    return "close";
   }
 
 })();

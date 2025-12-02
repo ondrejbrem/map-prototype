@@ -1,0 +1,526 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "locale": "cs",
+    "created": "2025-12-02T14:15:00Z",
+    "course": "Media Literacy - Upper Secondary",
+    "schoolYear": "2025/2026"
+  },
+  "nodes": [
+    {
+      "id": "atomic_goal_clickbait_emotion_experiment",
+      "type": "atomicGoal",
+      "label": "Clickbait: experiment s emocemi",
+      "fullText": "Žák formuluje předpověď o tom, jak emocionální jazyk v titulku ovlivní počet prokliků, navrhne jednoduchý experiment a vyhodnotí výsledky. Student dokáže identifikovat konkrétní emoční spouštěče v titulcích.",
+      "expertise": "B2",
+      "bloomsLevel": "Analyze",
+      "relatedTerms": ["term_clickbait", "term_emotion_language", "term_engagement_metrics"],
+      "topicId": "topic_manipulation_influence",
+      "sequence": 12,
+      "metadata": {
+        "estimatedHours": 2,
+        "discipline": "Media Literacy",
+        "source": "RVP Mediální výchova"
+      }
+    },
+    {
+      "id": "atomic_goal_clickbait_source_selection",
+      "type": "atomicGoal",
+      "label": "Rozlišit důvěryhodné zdroje od clickbaitu",
+      "fullText": "Žák posoudí věrohodnost online zdrojů na základě jejich použití clickbaitových technik. Dokáže identifikovat minimálně 3 indikátory nedůvěryhodného zdroje.",
+      "expertise": "B2",
+      "bloomsLevel": "Evaluate",
+      "relatedTerms": ["term_clickbait", "term_source_credibility", "term_verification"],
+      "topicId": "topic_manipulation_influence",
+      "sequence": 13,
+      "metadata": {
+        "estimatedHours": 1.5,
+        "discipline": "Media Literacy",
+        "source": "RVP Mediální výchova"
+      }
+    },
+    {
+      "id": "atomic_goal_emotional_manipulation_recognition",
+      "type": "atomicGoal",
+      "label": "Rozpoznat emocionální manipulaci",
+      "fullText": "Žák identifikuje techniky emocionální manipulace v mediálním obsahu včetně použití strachu, naléhavosti a potvrzovacího zkreslení.",
+      "expertise": "B1",
+      "bloomsLevel": "Understand",
+      "relatedTerms": ["term_emotion_language", "term_manipulation", "term_fear_appeal"],
+      "topicId": "topic_manipulation_influence",
+      "sequence": 10,
+      "metadata": {
+        "estimatedHours": 2,
+        "discipline": "Media Literacy"
+      }
+    },
+    {
+      "id": "term_clickbait",
+      "type": "term",
+      "label": "Clickbait",
+      "definition": "Titulek nebo obsah navržený primárně pro maximalizaci prokliků, často pomocí přehnaných emocí, tajemství nebo zavádějících informací. Typicky slibuje více, než obsah skutečně poskytuje.",
+      "synonyms": ["návnadový titulek", "clickbaitový nadpis"],
+      "category": "conceptual",
+      "language": "cs",
+      "metadata": {
+        "examples": [
+          "Neuvěříte, co se stalo dál!",
+          "Lékaři v šoku! Tento trik...",
+          "Číslo 7 vás překvapí"
+        ],
+        "frequency": "common"
+      }
+    },
+    {
+      "id": "term_emotion_language",
+      "type": "term",
+      "label": "Emocionální jazyk",
+      "definition": "Využití slov a frází, které vyvolávají silné emocionální reakce (strach, vztek, radost, překvapení) za účelem zvýšení zapojení publika nebo ovlivnění jejich rozhodování.",
+      "synonyms": ["emotivní jazyk", "afektivní komunikace"],
+      "category": "conceptual",
+      "language": "cs",
+      "metadata": {
+        "examples": [
+          "šokující", "neuvěřitelné", "skandální", "zázračný"
+        ],
+        "relatedConcepts": ["pathos", "persuaze"],
+        "frequency": "frequent"
+      }
+    },
+    {
+      "id": "term_engagement_metrics",
+      "type": "term",
+      "label": "Metriky zapojení",
+      "definition": "Měřitelné ukazatele interakce uživatelů s obsahem, včetně prokliků (CTR), času stráveného na stránce, sdílení a komentářů.",
+      "synonyms": ["engagement metriky", "míra zapojení"],
+      "category": "procedural",
+      "language": "cs",
+      "metadata": {
+        "examples": ["CTR (Click-Through Rate)", "čas na stránce", "bounce rate"],
+        "frequency": "common"
+      }
+    },
+    {
+      "id": "term_source_credibility",
+      "type": "term",
+      "label": "Věrohodnost zdroje",
+      "definition": "Míra důvěryhodnosti informačního zdroje založená na faktorech jako je transparentnost autorství, citace zdrojů, redakční proces a historická přesnost.",
+      "synonyms": ["kredibilita zdroje", "důvěryhodnost"],
+      "category": "conceptual",
+      "language": "cs",
+      "metadata": {
+        "checklistItems": [
+          "Uveden autor a jeho kvalifikace",
+          "Citovány primární zdroje",
+          "Datum publikace aktuální",
+          "Redakční kontrola přítomna"
+        ],
+        "frequency": "common"
+      }
+    },
+    {
+      "id": "term_verification",
+      "type": "term",
+      "label": "Ověřování informací",
+      "definition": "Proces kontroly pravdivosti tvrzení pomocí nezávislých zdrojů, fact-checkingu a cross-reference mezi několika důvěryhodnými zdroji.",
+      "synonyms": ["fact-checking", "ověřování faktů"],
+      "category": "procedural",
+      "language": "cs",
+      "metadata": {
+        "tools": ["Google Reverse Image Search", "Demagog.cz", "Manipulátoři.cz"],
+        "frequency": "common"
+      }
+    },
+    {
+      "id": "term_manipulation",
+      "type": "term",
+      "label": "Manipulace",
+      "definition": "Záměrné ovlivňování vnímání, emocí nebo rozhodování jiných osob skrytými nebo zavádějícími prostředky, často k prospěchu manipulátora.",
+      "synonyms": ["ovlivňování", "manipulativní komunikace"],
+      "category": "conceptual",
+      "language": "cs",
+      "metadata": {
+        "frequency": "frequent"
+      }
+    },
+    {
+      "id": "term_fear_appeal",
+      "type": "term",
+      "label": "Apel na strach",
+      "definition": "Persvazivní technika využívající vyvolání strachu nebo ohrožení k motivaci změny chování nebo přijetí určitého názoru.",
+      "synonyms": ["strašení", "zastrašovací taktika"],
+      "category": "conceptual",
+      "language": "cs",
+      "metadata": {
+        "examples": ["Pokud nejednáte TERAZ...", "Toto ohrožuje vaše děti!"],
+        "frequency": "common"
+      }
+    },
+    {
+      "id": "activity_clickbait_filter_quiz",
+      "type": "activity",
+      "label": "Clickbait Filter Quiz",
+      "expertise": "B2",
+      "activityType": "question",
+      "difficulty": "medium",
+      "estimatedDuration": 600,
+      "subtypeDetails": { 
+        "questionFormat": "multipleChoice"
+      },
+      "content": {
+        "prompt": "Vyber 3 z následujících 5 nadpisů, které jsou clickbait. Zdůvodni svou volbu.",
+        "options": [
+          {
+            "id": "opt-1",
+            "text": "Lékaři varují: Tento běžný nápoj ničí vaše játra!",
+            "isClickbait": true,
+            "indicators": ["emocionální jazyk", "vágní informace", "vyvolává strach"]
+          },
+          {
+            "id": "opt-2",
+            "text": "Studie z roku 2024 zjistila spojitost mezi konzumací cukru a diabetem 2. typu",
+            "isClickbait": false,
+            "indicators": ["konkrétní informace", "uvedený zdroj", "neutrální jazyk"]
+          },
+          {
+            "id": "opt-3",
+            "text": "Neuvěříte, jak tato žena zhubnula 20 kilo! Foto č. 5 je šokující",
+            "isClickbait": true,
+            "indicators": ["vyvolává zvědavost", "číslovka", "emocionální jazyk"]
+          },
+          {
+            "id": "opt-4",
+            "text": "Vláda schválila novelu zákona o mediální odpovědnosti",
+            "isClickbait": false,
+            "indicators": ["faktické sdělení", "konkrétní informace", "neutrální tón"]
+          },
+          {
+            "id": "opt-5",
+            "text": "To, co tento učitel řekl studentům, změnilo jejich životy NAVŽDY",
+            "isClickbait": true,
+            "indicators": ["tajemství", "velká písmena", "emocionální náboj"]
+          }
+        ],
+        "rubric": "3 správné identifikace = 2 body | 2 správné = 1 bod | Zdůvodnění každého výběru +0.5 bodu (max +1.5)",
+        "correctAnswers": ["opt-1", "opt-3", "opt-5"]
+      },
+      "metadata": {
+        "author": "Mgr. Novák",
+        "created": "2025-11-15"
+      }
+    },
+    {
+      "id": "activity_emotion_experiment",
+      "type": "activity",
+      "label": "Experiment: Emoce v titulcích",
+      "expertise": "B2",
+      "activityType": "project",
+      "difficulty": "hard",
+      "estimatedDuration": 3600,
+      "subtypeDetails": {
+        "projectType": "experiment"
+      },
+      "content": {
+        "instructions": "Vytvořte 2 verze titulku pro stejný článek - jednu neutrální a jednu s emocionálním jazykem. Sdílejte je s 20 spolužáky a změřte, kolik lidí si přečte celý článek u každé verze.",
+        "deliverables": [
+          "2 verze titulku s analýzou použitých technik",
+          "Tabulka s výsledky experimentu (min. 20 respondentů)",
+          "Písemné shrnutí (300-500 slov) vysvětlující rozdíly v zapojení a jejich příčiny"
+        ],
+        "assessmentCriteria": [
+          "Kvalita experimentálního designu (jasná hypotéza, kontrola proměnných)",
+          "Sběr a prezentace dat",
+          "Hloubka analýzy výsledků"
+        ]
+      },
+      "metadata": {
+        "groupWork": true,
+        "maxGroupSize": 3
+      }
+    },
+    {
+      "id": "activity_source_credibility_checklist",
+      "type": "activity",
+      "label": "Checklist věrohodnosti",
+      "expertise": "B1",
+      "activityType": "exercise",
+      "difficulty": "easy",
+      "estimatedDuration": 900,
+      "subtypeDetails": {
+        "exerciseType": "evaluation"
+      },
+      "content": {
+        "instructions": "Použijte checklist k vyhodnocení 3 různých online článků. Rozhodněte, kterému zdroji nejvíce důvěřujete a proč.",
+        "checklist": [
+          "Je uveden autor a jeho kvalifikace?",
+          "Jsou citovány primární zdroje?",
+          "Je datum publikace aktuální?",
+          "Obsahuje článek reklamy nebo sponzorovaný obsah?",
+          "Používá článek emocionální nebo neutrální jazyk?",
+          "Je možné ověřit tvrzení v nezávislých zdrojích?"
+        ],
+        "articles": [
+          "https://example-news-1.cz/clanek",
+          "https://example-news-2.cz/clanek",
+          "https://example-blog.cz/post"
+        ]
+      }
+    },
+    {
+      "id": "topic_manipulation_influence",
+      "type": "topic",
+      "label": "Manipulace a vliv v médiích",
+      "description": "Žáci se naučí rozpoznávat a analyzovat manipulativní techniky používané v moderních médiích, včetně clickbaitu, emocionálních apelů a dezinformací.",
+      "discipline": "Media Literacy",
+      "level": "upperSecondary",
+      "order": 3,
+      "parentTopicId": null,
+      "metadata": {
+        "estimatedWeeks": 4,
+        "coreCompetencies": ["Kritické myšlení", "Mediální gramotnost", "Hodnocení informací"]
+      }
+    },
+    {
+      "id": "edu_goal_detecting_clickbait",
+      "type": "educationalGoal",
+      "label": "Rozpoznat a vyhodnotit clickbaitové taktiky",
+      "description": "Žáci dokážou identifikovat clickbaitové techniky, porozumět jejich účelu a kriticky vyhodnotit věrohodnost zdrojů, které je používají.",
+      "bloomsLevel": "Evaluate",
+      "topicId": "topic_manipulation_influence",
+      "atomicGoalIds": [
+        "atomic_goal_clickbait_emotion_experiment",
+        "atomic_goal_clickbait_source_selection"
+      ],
+      "metadata": {
+        "alignsWithCurriculum": "RVP Mediální výchova - 4.2.3",
+        "essentialForNextLevel": true
+      }
+    },
+    {
+      "id": "edu_goal_emotional_awareness",
+      "type": "educationalGoal",
+      "label": "Porozumět emocionální manipulaci v médiích",
+      "description": "Žáci rozpoznají techniky emocionální manipulace a pochopí, jak ovlivňují jejich vnímání a rozhodování.",
+      "bloomsLevel": "Understand",
+      "topicId": "topic_manipulation_influence",
+      "atomicGoalIds": [
+        "atomic_goal_emotional_manipulation_recognition"
+      ],
+      "metadata": {
+        "alignsWithCurriculum": "RVP Mediální výchova - 4.2.1"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_validates_clickbait_quiz_emotion_experiment",
+      "type": "validates",
+      "source": "activity_clickbait_filter_quiz",
+      "target": "atomic_goal_clickbait_emotion_experiment",
+      "strength": "strong",
+      "metadata": {
+        "assessmentType": "formative",
+        "confidence": 0.85
+      }
+    },
+    {
+      "id": "edge_validates_emotion_experiment_project",
+      "type": "validates",
+      "source": "activity_emotion_experiment",
+      "target": "atomic_goal_clickbait_emotion_experiment",
+      "strength": "strong",
+      "metadata": {
+        "assessmentType": "summative",
+        "confidence": 0.95
+      }
+    },
+    {
+      "id": "edge_validates_checklist_source_selection",
+      "type": "validates",
+      "source": "activity_source_credibility_checklist",
+      "target": "atomic_goal_clickbait_source_selection",
+      "strength": "moderate",
+      "metadata": {
+        "assessmentType": "formative",
+        "confidence": 0.75
+      }
+    },
+    {
+      "id": "edge_requires_clickbait_emotion_term",
+      "type": "requiresUnderstanding",
+      "source": "atomic_goal_clickbait_emotion_experiment",
+      "target": "term_clickbait",
+      "strength": "strong",
+      "metadata": {
+        "criticality": "essential",
+        "order": 1
+      }
+    },
+    {
+      "id": "edge_requires_emotion_language_term",
+      "type": "requiresUnderstanding",
+      "source": "atomic_goal_clickbait_emotion_experiment",
+      "target": "term_emotion_language",
+      "strength": "strong",
+      "metadata": {
+        "criticality": "essential",
+        "order": 2
+      }
+    },
+    {
+      "id": "edge_requires_engagement_metrics",
+      "type": "requiresUnderstanding",
+      "source": "atomic_goal_clickbait_emotion_experiment",
+      "target": "term_engagement_metrics",
+      "strength": "moderate",
+      "metadata": {
+        "criticality": "important",
+        "order": 3
+      }
+    },
+    {
+      "id": "edge_requires_source_credibility",
+      "type": "requiresUnderstanding",
+      "source": "atomic_goal_clickbait_source_selection",
+      "target": "term_source_credibility",
+      "strength": "strong",
+      "metadata": {
+        "criticality": "essential",
+        "order": 1
+      }
+    },
+    {
+      "id": "edge_requires_verification",
+      "type": "requiresUnderstanding",
+      "source": "atomic_goal_clickbait_source_selection",
+      "target": "term_verification",
+      "strength": "strong",
+      "metadata": {
+        "criticality": "essential",
+        "order": 2
+      }
+    },
+    {
+      "id": "edge_aggregates_detect_clickbait_emotion_experiment",
+      "type": "aggregates",
+      "source": "edu_goal_detecting_clickbait",
+      "target": "atomic_goal_clickbait_emotion_experiment",
+      "strength": "strong",
+      "metadata": {
+        "contributes": 0.5
+      }
+    },
+    {
+      "id": "edge_aggregates_detect_clickbait_source_selection",
+      "type": "aggregates",
+      "source": "edu_goal_detecting_clickbait",
+      "target": "atomic_goal_clickbait_source_selection",
+      "strength": "strong",
+      "metadata": {
+        "contributes": 0.5
+      }
+    },
+    {
+      "id": "edge_aggregates_emotional_awareness",
+      "type": "aggregates",
+      "source": "edu_goal_emotional_awareness",
+      "target": "atomic_goal_emotional_manipulation_recognition",
+      "strength": "strong",
+      "metadata": {
+        "contributes": 1.0
+      }
+    },
+    {
+      "id": "edge_ispartof_detect_clickbait_topic_manipulation",
+      "type": "isPartOf",
+      "source": "edu_goal_detecting_clickbait",
+      "target": "topic_manipulation_influence",
+      "strength": "strong"
+    },
+    {
+      "id": "edge_ispartof_emotional_awareness_topic",
+      "type": "isPartOf",
+      "source": "edu_goal_emotional_awareness",
+      "target": "topic_manipulation_influence",
+      "strength": "strong"
+    },
+    {
+      "id": "edge_prereq_emotion_experiment_filter_goal",
+      "type": "prerequisite",
+      "source": "atomic_goal_emotional_manipulation_recognition",
+      "target": "atomic_goal_clickbait_emotion_experiment",
+      "strength": "moderate",
+      "metadata": {
+        "type": "soft",
+        "order": 1,
+        "justification": "Porozumění emocionální manipulaci pomáhá analyzovat clickbait"
+      }
+    },
+    {
+      "id": "edge_prereq_emotion_to_source",
+      "type": "prerequisite",
+      "source": "atomic_goal_clickbait_emotion_experiment",
+      "target": "atomic_goal_clickbait_source_selection",
+      "strength": "strong",
+      "metadata": {
+        "type": "hard",
+        "order": 2,
+        "justification": "Musí rozumět emocionální manipulaci před hodnocením věrohodnosti"
+      }
+    },
+    {
+      "id": "edge_reinforces_term_clickbait_term_emotion_language",
+      "type": "reinforces",
+      "source": "term_clickbait",
+      "target": "term_emotion_language",
+      "strength": "strong",
+      "metadata": {
+        "conceptualDistance": 0.2,
+        "relationship": "Clickbait primárně využívá emocionální jazyk"
+      }
+    },
+    {
+      "id": "edge_reinforces_emotion_manipulation",
+      "type": "reinforces",
+      "source": "term_emotion_language",
+      "target": "term_manipulation",
+      "strength": "moderate",
+      "metadata": {
+        "conceptualDistance": 0.3,
+        "relationship": "Emocionální jazyk je nástroj manipulace"
+      }
+    },
+    {
+      "id": "edge_reinforces_credibility_verification",
+      "type": "reinforces",
+      "source": "term_source_credibility",
+      "target": "term_verification",
+      "strength": "strong",
+      "metadata": {
+        "conceptualDistance": 0.15,
+        "relationship": "Věrohodnost se zjišťuje ověřováním"
+      }
+    },
+    {
+      "id": "edge_exemplifies_activity_clickbait_filter_quiz_term_clickbait",
+      "type": "exemplifies",
+      "source": "activity_clickbait_filter_quiz",
+      "target": "term_clickbait",
+      "strength": "strong"
+    },
+    {
+      "id": "edge_exemplifies_emotion_experiment_emotion_language",
+      "type": "exemplifies",
+      "source": "activity_emotion_experiment",
+      "target": "term_emotion_language",
+      "strength": "strong"
+    },
+    {
+      "id": "edge_exemplifies_checklist_credibility",
+      "type": "exemplifies",
+      "source": "activity_source_credibility_checklist",
+      "target": "term_source_credibility",
+      "strength": "strong"
+    }
+  ]
+}

@@ -94,6 +94,10 @@ p {
   color: #7ee0ff;
 }
 
+.legend__dot--atomic {
+  color: #23b7ff;
+}
+
 .legend__dot--activity {
   color: #ff7ea9;
 }
@@ -355,6 +359,10 @@ p {
   font-size: 1rem;
 }
 
+.node-label--educationalGoal {
+  font-size: 0.95rem;
+}
+
 .node-label--topic {
   font-size: 1rem;
 }
@@ -375,7 +383,7 @@ p {
   font-size: 0.9rem;
 }
 
-.node--goal circle {
+.node--atomicGoal circle {
   fill: transparent;
   stroke: rgba(126, 224, 255, 0.8);
 }
@@ -390,7 +398,7 @@ p {
   stroke: rgba(215, 255, 126, 0.8);
 }
 
-.node--area circle {
+.node--educationalGoal circle {
   fill: transparent;
   stroke: rgba(138, 200, 255, 0.6);
 }
