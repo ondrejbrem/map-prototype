@@ -169,11 +169,17 @@
       expertise: new Set()
     };
 
-    const nodes = conceptData.nodes.map(normalizeNode).map((node) => ({
-      ...node,
-      levels: extractLevels(node.expertise, expertiseOrder),
-      detailLevel: config.detailByType[node.type] || "close"
-    }));
+    const nodes = conceptData.nodes
+      .map(normalizeNode)
+      .map((node) => {
+        const detailLevel = config.detailByType[node.type] || "close";
+        return {
+          ...node,
+          levels: extractLevels(node.expertise, expertiseOrder),
+          detailLevel,
+          detailRank: detailRank(detailLevel)
+        };
+      });
     const edges = (conceptData.edges || []).map((edge) => ({
       ...edge,
       relation: edge.type || edge.relation || "related"
@@ -404,6 +410,7 @@
           label: node.label,
           type: node.type,
           detailLevel: node.detailLevel,
+          detailRank: detailRank(node.detailLevel),
           width: style.size,
           height: style.size,
           shape: style.shape
@@ -422,12 +429,12 @@
   function buildStyles(cfg) {
     const baseNode = {
       label: "data(label)",
-      "font-size": 12,
+      "font-size": "mapData(detailRank, 0, 2, 14, 10)",
       "font-family": "Inter, 'Segoe UI', system-ui, -apple-system, sans-serif",
       "text-valign": "center",
       "text-halign": "center",
       "text-wrap": "wrap",
-      "text-max-width": 140,
+      "text-max-width": "mapData(detailRank, 0, 2, 200, 110)",
       color: "#f5f5f5",
       "text-outline-width": 0,
       "background-color": "transparent",
