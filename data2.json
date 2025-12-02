@@ -2,8 +2,8 @@
   "metadata": {
     "version": "2.0",
     "locale": "cs",
-    "created": "2025-12-02T17:21:00Z",
-    "description": "Extended example with three curriculum areas"
+    "created": "2025-12-02T17:40:00Z",
+    "description": "Extended example with three curriculum areas - corrected edges"
   },
   "nodes": [
     {
@@ -309,42 +309,6 @@
       "target": "topic_6"
     },
     {
-      "id": "edge_topic1_area1",
-      "type": "isPartOf",
-      "source": "topic_1",
-      "target": "area_1"
-    },
-    {
-      "id": "edge_topic2_area1",
-      "type": "isPartOf",
-      "source": "topic_2",
-      "target": "area_1"
-    },
-    {
-      "id": "edge_topic3_area2",
-      "type": "isPartOf",
-      "source": "topic_3",
-      "target": "area_2"
-    },
-    {
-      "id": "edge_topic4_area2",
-      "type": "isPartOf",
-      "source": "topic_4",
-      "target": "area_2"
-    },
-    {
-      "id": "edge_topic5_area3",
-      "type": "isPartOf",
-      "source": "topic_5",
-      "target": "area_3"
-    },
-    {
-      "id": "edge_topic6_area3",
-      "type": "isPartOf",
-      "source": "topic_6",
-      "target": "area_3"
-    },
-    {
       "id": "edge_topic1_edugoal1",
       "type": "contains",
       "source": "topic_1",
@@ -381,42 +345,6 @@
       "target": "edu_goal_6"
     },
     {
-      "id": "edge_edugoal1_topic1",
-      "type": "isPartOf",
-      "source": "edu_goal_1",
-      "target": "topic_1"
-    },
-    {
-      "id": "edge_edugoal2_topic2",
-      "type": "isPartOf",
-      "source": "edu_goal_2",
-      "target": "topic_2"
-    },
-    {
-      "id": "edge_edugoal3_topic3",
-      "type": "isPartOf",
-      "source": "edu_goal_3",
-      "target": "topic_3"
-    },
-    {
-      "id": "edge_edugoal4_topic4",
-      "type": "isPartOf",
-      "source": "edu_goal_4",
-      "target": "topic_4"
-    },
-    {
-      "id": "edge_edugoal5_topic5",
-      "type": "isPartOf",
-      "source": "edu_goal_5",
-      "target": "topic_5"
-    },
-    {
-      "id": "edge_edugoal6_topic6",
-      "type": "isPartOf",
-      "source": "edu_goal_6",
-      "target": "topic_6"
-    },
-    {
       "id": "edge_edugoal1_atomicgoal1",
       "type": "contains",
       "source": "edu_goal_1",
@@ -451,42 +379,6 @@
       "type": "contains",
       "source": "edu_goal_6",
       "target": "atomic_goal_6"
-    },
-    {
-      "id": "edge_atomicgoal1_edugoal1",
-      "type": "isPartOf",
-      "source": "atomic_goal_1",
-      "target": "edu_goal_1"
-    },
-    {
-      "id": "edge_atomicgoal2_edugoal2",
-      "type": "isPartOf",
-      "source": "atomic_goal_2",
-      "target": "edu_goal_2"
-    },
-    {
-      "id": "edge_atomicgoal3_edugoal3",
-      "type": "isPartOf",
-      "source": "atomic_goal_3",
-      "target": "edu_goal_3"
-    },
-    {
-      "id": "edge_atomicgoal4_edugoal4",
-      "type": "isPartOf",
-      "source": "atomic_goal_4",
-      "target": "edu_goal_4"
-    },
-    {
-      "id": "edge_atomicgoal5_edugoal5",
-      "type": "isPartOf",
-      "source": "atomic_goal_5",
-      "target": "edu_goal_5"
-    },
-    {
-      "id": "edge_atomicgoal6_edugoal6",
-      "type": "isPartOf",
-      "source": "atomic_goal_6",
-      "target": "edu_goal_6"
     },
     {
       "id": "edge_atomicgoal1_term1",
@@ -561,39 +453,21 @@
       "target": "activity_6"
     },
     {
-      "id": "edge_atomicgoal1_requires_atomicgoal2",
+      "id": "edge_atomicgoal2_requires_atomicgoal1",
       "type": "requires",
-      "source": "atomic_goal_1",
-      "target": "atomic_goal_2",
-      "metadata": {
-        "justification": "Clickbait rozpoznání vyžaduje kritické myšlení"
-      }
-    },
-    {
-      "id": "edge_atomicgoal2_extends_atomicgoal1",
-      "type": "extends",
       "source": "atomic_goal_2",
       "target": "atomic_goal_1",
       "metadata": {
-        "justification": "Analýza argumentů rozšiřuje schopnost rozpoznat manipulaci"
+        "justification": "Analýza argumentů vyžaduje schopnost rozpoznat manipulaci"
       }
     },
     {
-      "id": "edge_atomicgoal5_requires_atomicgoal6",
+      "id": "edge_atomicgoal6_requires_atomicgoal5",
       "type": "requires",
-      "source": "atomic_goal_5",
-      "target": "atomic_goal_6",
-      "metadata": {
-        "justification": "Efektivní vyhledávání vyžaduje schopnost ověřit výsledky"
-      }
-    },
-    {
-      "id": "edge_atomicgoal6_extends_atomicgoal5",
-      "type": "extends",
       "source": "atomic_goal_6",
       "target": "atomic_goal_5",
       "metadata": {
-        "justification": "Ověřování rozšiřuje vyhledávací kompetence"
+        "justification": "Ověřování zdrojů vyžaduje schopnost efektivně vyhledávat"
       }
     },
     {
@@ -606,12 +480,12 @@
       }
     },
     {
-      "id": "edge_edugoal1_extends_edugoal2",
-      "type": "extends",
-      "source": "edu_goal_1",
-      "target": "edu_goal_2",
+      "id": "edge_edugoal6_requires_edugoal5",
+      "type": "requires",
+      "source": "edu_goal_6",
+      "target": "edu_goal_5",
       "metadata": {
-        "justification": "Rozpoznání manipulace rozšiřuje kritické myšlení"
+        "justification": "Ověřování vyžaduje vyhledávací dovednosti"
       }
     },
     {
