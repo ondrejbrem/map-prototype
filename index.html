@@ -40,6 +40,16 @@
     </header>
 
     <section class="controls">
+      <div class="control-group control-group--source">
+        <label>Dataset</label>
+        <div class="source-controls">
+          <select id="dataset-select" aria-label="Preset datasets"></select>
+          <label class="upload-label">
+            <span>Upload JSON</span>
+            <input type="file" id="data-upload" accept="application/json,.json" />
+          </label>
+        </div>
+      </div>
       <div class="control-group">
         <label>Node types</label>
         <div class="chips" id="type-filter"></div>
@@ -68,18 +78,12 @@
       <aside class="info-panel" id="info-panel">
         <div class="info-panel__empty">
           <h2>Select a node</h2>
-          <p>Highlight an area, topic, goal, term, or activity to see why it matters and how it connects.</p>
-          <ul>
-            <li>Zoom out to spot areas and overlapping topics.</li>
-            <li>Zoom in to surface atomic goals, activities, and terms.</li>
-            <li>Use the chips above to filter by node type or expertise level.</li>
-          </ul>
+          <p>Zoom to reveal layers (area → topic → atomic goal). Use the dataset switcher above or upload your own JSON.</p>
         </div>
       </aside>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
-    <script src="data.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

@@ -25,13 +25,132 @@
       prerequisite: { color: "#a277ff", width: 2.5, dash: [8, 4] },
       reinforces: { color: "#8fd3c8", width: 2, dash: [5, 3] },
       exemplifies: { color: "#7ee0ff", width: 2, dash: [3, 2] }
-    }
+    },
+    datasets: [
+      { label: "Simple demo", value: "simpledata.json" },
+      { label: "Dataset 1", value: "data1.json" },
+      { label: "Dataset 2", value: "data2.json" }
+    ],
+    defaultDataset: "simpledata.json"
   };
 
-  fetch("simpledata.json")
-    .then((r) => r.json())
-    .then((payload) => initCytoscape(payload))
-    .catch((err) => console.error("Failed to load simpledata.json", err));
+  const runtime = { cy: null };
+  const datasetSelectEl = document.getElementById("dataset-select");
+  const uploadInputEl = document.getElementById("data-upload");
+  const zoomButtons = document.querySelectorAll(".zoom-buttons button");
+  const defaultInfoHtml = `
+    <div class="info-panel__empty">
+      <h2>Select a node</h2>
+      <p>Zoom to reveal layers (area → topic → atomic goal). Use the dataset switcher to explore different files.</p>
+    </div>
+  `;
+
+  setupDatasetControls();
+  setupZoomButtons();
+  loadDataset(config.defaultDataset || config.datasets[0]?.value);
+
+  function setupDatasetControls() {
+    if (datasetSelectEl) {
+      datasetSelectEl.innerHTML = "";
+      config.datasets.forEach(({ label, value }) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = label;
+        datasetSelectEl.appendChild(option);
+      });
+      const defaultValue = config.defaultDataset || (config.datasets[0] && config.datasets[0].value) || "";
+      datasetSelectEl.value = defaultValue;
+      datasetSelectEl.addEventListener("change", () => {
+        if (datasetSelectEl.value) {
+          loadDataset(datasetSelectEl.value);
+        }
+      });
+    }
+    if (uploadInputEl) {
+      uploadInputEl.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const data = JSON.parse(reader.result);
+            if (datasetSelectEl) {
+              datasetSelectEl.value = "";
+            }
+            loadDataset({ inline: data });
+          } catch (error) {
+            console.error("Failed to parse uploaded JSON", error);
+            alert("JSON soubor se nepodařilo načíst.");
+          }
+        };
+        reader.readAsText(file);
+        event.target.value = "";
+      });
+    }
+  }
+
+  function setupZoomButtons() {
+    zoomButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (!runtime.cy) {
+          return;
+        }
+        const direction = btn.dataset.zoom === "in" ? 1 : -1;
+        const factor = Math.pow(1.2, direction);
+        const targetZoom = clamp(runtime.cy.zoom() * factor, runtime.cy.minZoom(), runtime.cy.maxZoom());
+        runtime.cy.zoom({
+          level: targetZoom,
+          renderedPosition: {
+            x: runtime.cy.width() / 2,
+            y: runtime.cy.height() / 2
+          }
+        });
+      });
+    });
+  }
+
+  function loadDataset(source) {
+    if (!source) {
+      console.warn("No dataset specified");
+      return;
+    }
+    if (typeof source === "string") {
+      fetch(source)
+        .then((resp) => {
+          if (!resp.ok) {
+            throw new Error(`HTTP ${resp.status}`);
+          }
+          return resp.json();
+        })
+        .then((data) => renderDataset(data))
+        .catch((error) => {
+          console.error(`Failed to load ${source}`, error);
+          alert(`Datový soubor ${source} se nepodařilo načíst.`);
+        });
+      return;
+    }
+    if (source.inline) {
+      renderDataset(source.inline);
+    }
+  }
+
+  function renderDataset(data) {
+    teardown();
+    runtime.cy = initCytoscape(data);
+  }
+
+  function teardown() {
+    if (runtime.cy) {
+      runtime.cy.destroy();
+      runtime.cy = null;
+    }
+    const infoPanel = document.getElementById("info-panel");
+    if (infoPanel) {
+      infoPanel.innerHTML = defaultInfoHtml;
+    }
+  }
 
   function initCytoscape(conceptData) {
     const container = document.getElementById("concept-map");
@@ -105,15 +224,6 @@
       applyFilters();
     });
 
-    document.querySelectorAll(".zoom-buttons button").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const direction = btn.dataset.zoom === "in" ? 1 : -1;
-        const factor = Math.pow(1.2, direction);
-        const target = clamp(cy.zoom() * factor, cy.minZoom(), cy.maxZoom());
-        cy.zoom({ level: target, renderedPosition: { x: container.clientWidth / 2, y: container.clientHeight / 2 } });
-      });
-    });
-
     function applyFilters() {
       cy.batch(() => {
         nodes.forEach((node) => {
@@ -145,10 +255,7 @@
     function renderInfo(node) {
       infoPanel.innerHTML = "";
       if (!node) {
-        const wrap = document.createElement("div");
-        wrap.className = "info-panel__empty";
-        wrap.innerHTML = `<h2>Vyber uzel</h2><p>Zoomem odhalíš další vrstvy (oblast → téma → atomický cíl).</p>`;
-        infoPanel.appendChild(wrap);
+        infoPanel.innerHTML = defaultInfoHtml;
         return;
       }
       const header = document.createElement("div");
@@ -213,6 +320,8 @@
       if (!zoomReadout) return;
       zoomReadout.textContent = `${Math.round(cy.zoom() * 100)}%`;
     }
+
+    return cy;
   }
 
   function initFilters(nodes, filters, typeFilterEl, expertiseFilterEl, expertiseOrder, onChange) {
@@ -294,11 +403,13 @@
           id: node.id,
           label: node.label,
           type: node.type,
-          detailLevel: node.detailLevel
+          detailLevel: node.detailLevel,
+          width: style.size,
+          height: style.size,
+          shape: style.shape
         },
-        position: node.x && node.y ? { x: node.x, y: node.y } : undefined,
-        classes: [`node-${node.type}`, `detail-${node.detailLevel}`].join(" "),
-        scratch: { cfg: style, width: style.size, height: style.size }
+        position: node.x != null && node.y != null ? { x: node.x, y: node.y } : undefined,
+        classes: [`node-${node.type}`, `detail-${node.detailLevel}`].join(" ")
       };
     });
     const edgeElements = edges.map((edge) => ({
