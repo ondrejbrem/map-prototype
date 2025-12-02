@@ -1,4 +1,9 @@
 (() => {
+  if (typeof cytoscape !== "undefined") {
+    initCytoscapeMap();
+    return;
+  }
+
   const svg = document.getElementById("concept-map");
   const infoPanel = document.getElementById("info-panel");
   const zoomReadout = document.getElementById("zoom-readout");
@@ -269,7 +274,7 @@
   }
 
   function drawTerm(group, node) {
-    const size = 24;
+    const size = 10;
     const points = [
       `${node.x} ${node.y - size}`,
       `${node.x + size} ${node.y}`,
@@ -794,6 +799,679 @@
         activity.y = topic.y + radius * Math.sin(offsetAngle);
       });
     });
+  }
+
+  function initCytoscapeMap() {
+    const container = document.getElementById("concept-map");
+    const infoPanel = document.getElementById("info-panel");
+    const zoomReadout = document.getElementById("zoom-readout");
+    const typeFilterEl = document.getElementById("type-filter");
+    const expertiseFilterEl = document.getElementById("expertise-filter");
+
+    const hasData = typeof conceptData !== "undefined";
+    if (!container || !infoPanel || !hasData) {
+      console.warn("Cytoscape concept map: missing container or data");
+      return;
+    }
+
+    const expertiseOrder = ["A1", "A2", "B1", "B2", "C1", "C2"];
+    const filters = {
+      types: new Set(["area", "topic", "goal", "activity", "term"]),
+      expertise: new Set()
+    };
+
+    const nodes = conceptData.nodes.map((node) => ({
+      ...node,
+      levels: extractLevels(node.expertise)
+    }));
+    const edges = conceptData.edges ?? [];
+    const nodesById = new Map(nodes.map((node) => [node.id, node]));
+    applyLegacyLayout(nodes, edges, nodesById);
+    const adjacency = buildAdjacency(edges);
+
+    const cy = cytoscape({
+      container,
+      elements: buildElements(nodes, edges),
+      style: buildStyles(),
+      layout: { name: "preset" },
+      minZoom: 0.35,
+      maxZoom: 2.5,
+      wheelSensitivity: 0.2,
+      autoungrabify: true,
+      boxSelectionEnabled: false
+    });
+
+    cy.fit(cy.nodes(), 30);
+    window.addEventListener("resize", () => cy.resize());
+
+    const state = {
+      selectedNodeId: null
+    };
+
+    initFilters();
+    initInteractions();
+    applyFilters();
+    renderInfoPanel(null);
+    updateZoomReadout();
+
+    function buildElements(nodeList, edgeList) {
+      const nodeElements = nodeList.map((node) => {
+        const { width, height, shape } = nodeDimensions(node);
+        return {
+          data: {
+            id: node.id,
+            label: node.label,
+            type: node.type,
+            expertise: node.expertise || "",
+            lessons: node.lessons || "",
+            description: node.description || "",
+            activityType: node.activityType || "",
+            width,
+            height,
+            shape
+          },
+          position: { x: node.x || 0, y: node.y || 0 },
+          classes: `node-${node.type}`
+        };
+      });
+
+      const edgeElements = edgeList.map((edge) => ({
+        data: {
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          relation: edge.relation || ""
+        },
+        classes: edge.relation ? `edge-${edge.relation}` : ""
+      }));
+
+      return [...nodeElements, ...edgeElements];
+    }
+
+    function buildStyles() {
+      return [
+        {
+          selector: "node",
+          style: {
+            label: "data(label)",
+            "font-size": 14,
+            "font-family": "Inter, 'Segoe UI', system-ui, -apple-system, sans-serif",
+            "text-wrap": "wrap",
+            "text-max-width": 160,
+            "text-valign": "center",
+            "text-halign": "center",
+            color: "#f5f5f5",
+            "background-color": "#7ee0ff",
+            "border-width": 2,
+            "border-color": "rgba(255, 255, 255, 0.6)",
+            width: "data(width)",
+            height: "data(height)",
+            shape: "data(shape)",
+            "text-outline-width": 0
+          }
+        },
+        {
+          selector: "node.node-area",
+          style: {
+            "background-color": "rgba(138, 200, 255, 0.06)",
+            "border-color": "rgba(138, 200, 255, 0.35)",
+            "font-size": 22,
+            "font-weight": 600,
+            shape: "ellipse"
+          }
+        },
+        {
+          selector: "node.node-topic",
+          style: {
+            "background-color": "rgba(248, 180, 78, 0.1)",
+            "border-color": "rgba(248, 180, 78, 0.7)",
+            "font-size": 16,
+            shape: "ellipse"
+          }
+        },
+        {
+          selector: "node.node-goal",
+          style: {
+            "background-color": "rgba(126, 224, 255, 0.15)",
+            "border-color": "rgba(126, 224, 255, 0.8)",
+            "font-size": 12,
+            shape: "ellipse"
+          }
+        },
+        {
+          selector: "node.node-activity",
+          style: {
+            "background-color": "rgba(255, 126, 169, 0.16)",
+            "border-color": "rgba(255, 126, 169, 0.8)",
+            shape: "roundrectangle",
+            "border-radius": 18,
+            "font-size": 13
+          }
+        },
+        {
+          selector: "node.node-term",
+          style: {
+            "background-color": "rgba(215, 255, 126, 0.15)",
+            "border-color": "rgba(215, 255, 126, 0.8)",
+            shape: "diamond",
+            "font-size": 12
+          }
+        },
+        {
+          selector: "edge",
+          style: {
+            width: 2,
+            "line-color": "rgba(255, 255, 255, 0.25)",
+            "curve-style": "straight"
+          }
+        },
+        {
+          selector: ".edge-validates",
+          style: {
+            "line-style": "dashed",
+            "line-color": "rgba(255, 126, 169, 0.5)",
+            width: 3
+          }
+        },
+        {
+          selector: ".edge-relates",
+          style: {
+            "line-style": "dashed",
+            "line-color": "rgba(126, 224, 255, 0.55)"
+          }
+        },
+        {
+          selector: "node.is-focused",
+          style: {
+            "border-color": "#fff",
+            "border-width": 4,
+            "shadow-blur": 25,
+            "shadow-color": "rgba(255, 255, 255, 0.4)"
+          }
+        },
+        {
+          selector: "edge.is-linked",
+          style: {
+            "line-color": "#fff",
+            width: 4
+          }
+        },
+        {
+          selector: "node.is-linked",
+          style: {
+            "border-color": "#fff",
+            "border-width": 3
+          }
+        },
+        {
+          selector: ".is-selected",
+          style: {
+            "border-color": "#fff",
+            "border-width": 5,
+            "shadow-blur": 30,
+            "shadow-color": "rgba(255, 255, 255, 0.55)"
+          }
+        },
+        {
+          selector: ".is-hidden",
+          style: {
+            display: "none"
+          }
+        }
+      ];
+    }
+
+    function nodeDimensions(node) {
+      if (node.type === "area") {
+        const size = (node.radius || 260) * 2;
+        return { width: size, height: size, shape: "ellipse" };
+      }
+      if (node.type === "topic") {
+        const size = (node.radius || 120) * 2;
+        return { width: size, height: size, shape: "ellipse" };
+      }
+      if (node.type === "activity") {
+        const width = Math.max(200, (node.label || "").length * 7);
+        return { width, height: 70, shape: "roundrectangle" };
+      }
+      if (node.type === "term") {
+        return { width: 70, height: 70, shape: "diamond" };
+      }
+      return { width: 60, height: 60, shape: "ellipse" };
+    }
+
+    function initFilters() {
+      const levelOptions = Array.from(
+        new Set(
+          nodes.flatMap((node) => node.levels)
+        )
+      ).sort((a, b) => expertiseOrder.indexOf(a) - expertiseOrder.indexOf(b));
+
+      if (levelOptions.length === 0) {
+        levelOptions.push("A1");
+      }
+
+      levelOptions.forEach((level) => filters.expertise.add(level));
+
+      createChips(typeFilterEl, [
+        { key: "area", label: "Areas" },
+        { key: "topic", label: "Topics" },
+        { key: "goal", label: "Goals" },
+        { key: "activity", label: "Activities" },
+        { key: "term", label: "Terms" }
+      ], filters.types);
+
+      createChips(
+        expertiseFilterEl,
+        levelOptions.map((level) => ({ key: level, label: level })),
+        filters.expertise
+      );
+    }
+
+    function createChips(container, items, activeSet) {
+      container.innerHTML = "";
+      items.forEach(({ key, label }) => {
+        const chip = document.createElement("button");
+        chip.className = "chip is-active";
+        chip.type = "button";
+        chip.textContent = label;
+        chip.dataset.value = key;
+        chip.addEventListener("click", () => {
+          if (chip.classList.contains("is-active")) {
+            if (activeSet.size <= 1) {
+              return;
+            }
+            chip.classList.remove("is-active");
+            activeSet.delete(key);
+          } else {
+            chip.classList.add("is-active");
+            activeSet.add(key);
+          }
+          applyFilters();
+        });
+        container.appendChild(chip);
+      });
+    }
+
+    function initInteractions() {
+      cy.on("mouseover", "node", (event) => {
+        highlightNode(event.target);
+      });
+
+      cy.on("mouseout", "node", () => {
+        clearHover();
+      });
+
+      cy.on("tap", "node", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setSelectedNode(event.target.id());
+      });
+
+      cy.on("tap", (event) => {
+        if (event.target === cy) {
+          setSelectedNode(null);
+          clearHover();
+        }
+      });
+
+      cy.on("zoom", () => updateZoomReadout());
+
+      document.querySelectorAll(".zoom-buttons button").forEach((button) => {
+        button.addEventListener("click", () => {
+          const direction = button.dataset.zoom === "in" ? 1 : -1;
+          zoomBy(direction);
+        });
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          setSelectedNode(null);
+          clearHover();
+        }
+      });
+    }
+
+    function zoomBy(direction) {
+      const current = cy.zoom();
+      const factor = Math.pow(1.2, direction);
+      const target = clamp(current * factor, cy.minZoom(), cy.maxZoom());
+      cy.zoom({ level: target, renderedPosition: { x: container.clientWidth / 2, y: container.clientHeight / 2 } });
+      updateZoomReadout();
+    }
+
+    function applyFilters() {
+      nodes.forEach((node) => {
+        const isTypeVisible = filters.types.has(node.type);
+        const matchesExpertise = node.levels.length === 0 || node.levels.some((level) => filters.expertise.has(level));
+        const visible = isTypeVisible && matchesExpertise;
+        const cyNode = cy.getElementById(node.id);
+        if (cyNode.empty()) {
+          return;
+        }
+        if (visible) {
+          cyNode.removeClass("is-hidden");
+        } else {
+          cyNode.addClass("is-hidden");
+        }
+      });
+
+      edges.forEach((edge) => {
+        const sourceVisible = !cy.getElementById(edge.source).hasClass("is-hidden");
+        const targetVisible = !cy.getElementById(edge.target).hasClass("is-hidden");
+        const cyEdge = cy.getElementById(edge.id);
+        if (cyEdge.empty()) {
+          return;
+        }
+        if (sourceVisible && targetVisible) {
+          cyEdge.removeClass("is-hidden");
+        } else {
+          cyEdge.addClass("is-hidden");
+        }
+      });
+
+      if (state.selectedNodeId && cy.getElementById(state.selectedNodeId).hasClass("is-hidden")) {
+        setSelectedNode(null);
+      }
+    }
+
+    function highlightNode(node) {
+      if (!node || node.hasClass("is-hidden")) {
+        return;
+      }
+      clearHover();
+      node.addClass("is-focused");
+      const neighbors = node.closedNeighborhood();
+      neighbors.edges().addClass("is-linked");
+      neighbors.nodes().forEach((neighbor) => {
+        if (neighbor.id() !== node.id()) {
+          neighbor.addClass("is-linked");
+        }
+      });
+    }
+
+    function clearHover() {
+      cy.elements().removeClass("is-focused");
+      cy.elements().removeClass("is-linked");
+    }
+
+    function setSelectedNode(nodeId) {
+      if (state.selectedNodeId) {
+        const prev = cy.getElementById(state.selectedNodeId);
+        if (!prev.empty()) {
+          prev.removeClass("is-selected");
+        }
+      }
+      state.selectedNodeId = nodeId;
+      if (nodeId) {
+        const element = cy.getElementById(nodeId);
+        if (!element.empty()) {
+          element.addClass("is-selected");
+        }
+        renderInfoPanel(nodesById.get(nodeId));
+      } else {
+        renderInfoPanel(null);
+      }
+    }
+
+    function renderInfoPanel(node) {
+      infoPanel.innerHTML = "";
+      if (!node) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "info-panel__empty";
+        wrapper.innerHTML = `
+          <h2>Select a node</h2>
+          <p>Highlight an area, topic, goal, term, or activity to see how it supports the path to mastery.</p>
+          <ul>
+            <li>Zoom out to compare overlapping areas and topics.</li>
+            <li>Zoom in for atomic goals, activities, and key terms.</li>
+            <li>Filters help surface the right expertise band.</li>
+          </ul>
+        `;
+        infoPanel.appendChild(wrapper);
+        return;
+      }
+
+      const header = document.createElement("div");
+      header.className = "detail-header";
+
+      const pill = document.createElement("span");
+      pill.className = "detail-pill";
+      pill.textContent = node.type.toUpperCase();
+      header.appendChild(pill);
+
+      const title = document.createElement("h2");
+      title.textContent = node.label;
+      header.appendChild(title);
+
+      const metaParts = [];
+      if (node.expertise) {
+        metaParts.push(`Expertise ${node.expertise}`);
+      }
+      if (node.lessons) {
+        metaParts.push(node.lessons);
+      }
+      if (node.activityType) {
+        metaParts.push(`${capitalize(node.activityType)} activity`);
+      }
+      if (metaParts.length) {
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        meta.textContent = metaParts.join(" | ");
+        header.appendChild(meta);
+      }
+
+      infoPanel.appendChild(header);
+
+      if (node.description) {
+        const desc = document.createElement("p");
+        desc.textContent = node.description;
+        infoPanel.appendChild(desc);
+      }
+
+      const connections = adjacency.get(node.id) ?? [];
+      if (connections.length) {
+        const section = document.createElement("div");
+        section.className = "detail-section";
+        const heading = document.createElement("h3");
+        heading.textContent = "Connections";
+        section.appendChild(heading);
+
+        const list = document.createElement("ul");
+        connections
+          .map((link) => {
+            const other = nodesById.get(link.nodeId);
+            return other ? { other, relation: link.relation } : null;
+          })
+          .filter(Boolean)
+          .sort((a, b) => a.other.type.localeCompare(b.other.type))
+          .forEach(({ other, relation }) => {
+            const item = document.createElement("li");
+            item.textContent = `${describeRelation(node, other, relation)}: ${other.label}`;
+            list.appendChild(item);
+          });
+
+        section.appendChild(list);
+        infoPanel.appendChild(section);
+      }
+    }
+
+    function describeRelation(node, other, relation) {
+      if (relation === "validates") {
+        return node.type === "activity" ? "Validates" : other.type === "activity" ? "Validated by" : "Connected";
+      }
+      if (relation === "contains") {
+        if ((node.type === "area" && other.type !== "area") || (node.type === "topic" && other.type !== "topic")) {
+          return "Includes";
+        }
+        if ((other.type === "area" && node.type !== "area") || (other.type === "topic" && node.type !== "topic")) {
+          return "Part of";
+        }
+      }
+      if (relation === "relates") {
+        return "Relates to";
+      }
+      return "Connected to";
+    }
+
+    function buildAdjacency(edgeList) {
+      const map = new Map();
+      edgeList.forEach((edge) => {
+        register(edge.source, edge);
+        register(edge.target, edge);
+      });
+
+      function register(nodeId, edge) {
+        if (!map.has(nodeId)) {
+          map.set(nodeId, []);
+        }
+        const neighborId = edge.source === nodeId ? edge.target : edge.source;
+        map.get(nodeId).push({ nodeId: neighborId, relation: edge.relation, edgeId: edge.id });
+      }
+
+      return map;
+    }
+
+    function applyLegacyLayout(nodes, edges, nodesById) {
+      const topicGoals = new Map();
+      const goalPrimaryTopic = new Map();
+      const goalTerms = new Map();
+      const goalActivities = new Map();
+
+      edges.forEach((edge) => {
+        const source = nodesById.get(edge.source);
+        const target = nodesById.get(edge.target);
+        if (!source || !target) {
+          return;
+        }
+        if (edge.relation === "contains" && source.type === "topic" && target.type === "goal") {
+          registerGoalToTopic(target.id, source.id);
+        } else if (edge.relation === "contains" && target.type === "topic" && source.type === "goal") {
+          registerGoalToTopic(source.id, target.id);
+        } else if (edge.relation === "relates") {
+          const goalId = source.type === "goal" ? source.id : target.type === "goal" ? target.id : null;
+          const termId = source.type === "term" ? source.id : target.type === "term" ? target.id : null;
+          if (goalId && termId) {
+            if (!goalTerms.has(goalId)) {
+              goalTerms.set(goalId, []);
+            }
+            goalTerms.get(goalId).push(termId);
+          }
+        } else if (edge.relation === "validates") {
+          const goalId = source.type === "goal" ? source.id : target.type === "goal" ? target.id : null;
+          const activityId = source.type === "activity" ? source.id : target.type === "activity" ? target.id : null;
+          if (goalId && activityId) {
+            if (!goalActivities.has(goalId)) {
+              goalActivities.set(goalId, []);
+            }
+            goalActivities.get(goalId).push(activityId);
+          }
+        }
+      });
+
+      function registerGoalToTopic(goalId, topicId) {
+        if (!goalPrimaryTopic.has(goalId)) {
+          goalPrimaryTopic.set(goalId, topicId);
+        }
+        if (!topicGoals.has(topicId)) {
+          topicGoals.set(topicId, []);
+        }
+        if (!topicGoals.get(topicId).includes(goalId)) {
+          topicGoals.get(topicId).push(goalId);
+        }
+      }
+
+      const goalAngles = new Map();
+      topicGoals.forEach((goalIds, topicId) => {
+        const topic = nodesById.get(topicId);
+        if (!topic || goalIds.length === 0) {
+          return;
+        }
+        const goalRadius = Math.max(60, (topic.radius || 110) - 35);
+        const startAngle = -Math.PI / 2;
+        const step = (2 * Math.PI) / goalIds.length;
+        goalIds.forEach((goalId, index) => {
+          const angle = startAngle + index * step;
+          const goal = nodesById.get(goalId);
+          if (!goal) {
+            return;
+          }
+          goal.x = topic.x + goalRadius * Math.cos(angle);
+          goal.y = topic.y + goalRadius * Math.sin(angle);
+          goalAngles.set(goalId, angle);
+        });
+      });
+
+      goalTerms.forEach((termIds, goalId) => {
+        const angle = goalAngles.get(goalId);
+        const topicId = goalPrimaryTopic.get(goalId);
+        const topic = topicId ? nodesById.get(topicId) : null;
+        if (!topic || angle == null) {
+          return;
+        }
+        const baseRadius = (topic.radius || 110) + 35;
+        termIds.forEach((termId, index) => {
+          const term = nodesById.get(termId);
+          if (!term) {
+            return;
+          }
+          const offsetAngle = angle + (index % 2 === 0 ? 1 : -1) * 0.25 * Math.ceil(index / 2);
+          const radius = baseRadius + index * 22;
+          term.x = topic.x + radius * Math.cos(offsetAngle);
+          term.y = topic.y + radius * Math.sin(offsetAngle);
+        });
+      });
+
+      goalActivities.forEach((activityIds, goalId) => {
+        const angle = goalAngles.get(goalId);
+        const topicId = goalPrimaryTopic.get(goalId);
+        const topic = topicId ? nodesById.get(topicId) : null;
+        if (!topic || angle == null) {
+          return;
+        }
+        const baseRadius = (topic.radius || 110) + 95;
+        activityIds.forEach((activityId, index) => {
+          const activity = nodesById.get(activityId);
+          if (!activity) {
+            return;
+          }
+          const offsetAngle = angle + ((index % 2 === 0 ? 1 : -1) * 0.35 * Math.ceil(index / 2));
+          const radius = baseRadius + index * 30;
+          activity.x = topic.x + radius * Math.cos(offsetAngle);
+          activity.y = topic.y + radius * Math.sin(offsetAngle);
+        });
+      });
+    }
+
+    function extractLevels(value = "") {
+      const normalized = value.replace(/\s+/g, "").replace(/\u2013/g, "-");
+      const rangeParts = normalized.split("-");
+      if (rangeParts.length === 2) {
+        const startIndex = expertiseOrder.indexOf(rangeParts[0]);
+        const endIndex = expertiseOrder.indexOf(rangeParts[1]);
+        if (startIndex !== -1 && endIndex !== -1 && endIndex >= startIndex) {
+          return expertiseOrder.slice(startIndex, endIndex + 1);
+        }
+      }
+      const matches = normalized.match(/[A-C][1-2]/g);
+      return matches ? matches : [];
+    }
+
+    function updateZoomReadout() {
+      if (!zoomReadout) {
+        return;
+      }
+      const percent = Math.round(cy.zoom() * 100);
+      zoomReadout.textContent = `${percent}%`;
+    }
+
+    function capitalize(value = "") {
+      return value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
   }
 
 })();

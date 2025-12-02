@@ -60,13 +60,7 @@
 
     <main class="layout">
       <section class="map-panel">
-        <svg id="concept-map" viewBox="0 0 1200 800" role="img" aria-label="Concept learning map">
-          <defs>
-            <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#111" flood-opacity="0.25" />
-            </filter>
-          </defs>
-        </svg>
+        <div id="concept-map" role="img" aria-label="Concept learning map"></div>
         <div class="hint">
           Pan with drag &bull; Zoom with scroll or buttons &bull; Hover or tap nodes for details
         </div>
@@ -84,6 +78,7 @@
       </aside>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
     <script src="data.js"></script>
     <script src="app.js"></script>
   </body>

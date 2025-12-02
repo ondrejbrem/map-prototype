@@ -200,11 +200,11 @@ p {
 }
 
 #concept-map {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  display: block;
   cursor: grab;
-  will-change: transform;
   touch-action: none;
 }
 
