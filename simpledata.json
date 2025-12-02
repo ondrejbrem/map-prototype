@@ -1,0 +1,280 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "locale": "cs",
+    "created": "2025-12-02T16:50:00Z",
+    "description": "Minimal example with all node and edge types"
+  },
+  "nodes": [
+    {
+      "id": "atomic_goal_1",
+      "type": "atomicGoal",
+      "label": "Rozpoznat clickbait",
+      "fullText": "Žák identifikuje clickbaitové titulky na základě emocionálního jazyka.",
+      "expertise": "B1",
+      "bloomsLevel": "Understand",
+      "relatedTerms": ["term_1"],
+      "topicId": "topic_1",
+      "sequence": 1
+    },
+    {
+      "id": "atomic_goal_2",
+      "type": "atomicGoal",
+      "label": "Ověřit zdroj informace",
+      "fullText": "Žák vyhodnotí věrohodnost online zdroje pomocí checklistu.",
+      "expertise": "B2",
+      "bloomsLevel": "Evaluate",
+      "relatedTerms": ["term_2"],
+      "topicId": "topic_1",
+      "sequence": 2
+    },
+    {
+      "id": "term_1",
+      "type": "term",
+      "label": "Clickbait",
+      "definition": "Návnadový titulek navržený pro maximalizaci prokliků.",
+      "synonyms": ["návnadový titulek"],
+      "category": "conceptual",
+      "language": "cs"
+    },
+    {
+      "id": "term_2",
+      "type": "term",
+      "label": "Věrohodnost zdroje",
+      "definition": "Míra důvěryhodnosti informačního zdroje.",
+      "synonyms": ["kredibilita"],
+      "category": "conceptual",
+      "language": "cs"
+    },
+    {
+      "id": "activity_1",
+      "type": "activity",
+      "label": "Clickbait quiz",
+      "expertise": "B1",
+      "activityType": "question",
+      "difficulty": "medium",
+      "estimatedDuration": 300,
+      "subtypeDetails": {
+        "questionFormat": "multipleChoice"
+      },
+      "content": {
+        "prompt": "Který titulek je clickbait?",
+        "options": [
+          {"id": "a", "text": "Neuvěříte, co se stalo!", "isCorrect": true},
+          {"id": "b", "text": "Vláda schválila zákon", "isCorrect": false}
+        ]
+      }
+    },
+    {
+      "id": "activity_2",
+      "type": "activity",
+      "label": "Hodnocení zdrojů",
+      "expertise": "B2",
+      "activityType": "exercise",
+      "difficulty": "hard",
+      "estimatedDuration": 900,
+      "subtypeDetails": {
+        "exerciseType": "evaluation"
+      },
+      "content": {
+        "instructions": "Vyhodnoťte 3 články pomocí checklistu věrohodnosti."
+      }
+    },
+    {
+      "id": "topic_1",
+      "type": "topic",
+      "label": "Manipulace v médiích",
+      "description": "Základy rozpoznávání manipulativních technik.",
+      "discipline": "Media Literacy",
+      "level": "intermediate",
+      "order": 1,
+      "parentTopicId": "area_1"
+    },
+    {
+      "id": "topic_2",
+      "type": "topic",
+      "label": "Kritické myšlení",
+      "description": "Rozvoj schopnosti kriticky hodnotit informace.",
+      "discipline": "Media Literacy",
+      "level": "intermediate",
+      "order": 2,
+      "parentTopicId": "area_1"
+    },
+    {
+      "id": "area_1",
+      "type": "topic",
+      "label": "Mediální gramotnost",
+      "description": "Širší oblast pokrývající všechny aspekty mediální výchovy.",
+      "discipline": "Media Literacy",
+      "level": "general",
+      "order": 1,
+      "parentTopicId": null,
+      "metadata": {
+        "isTopLevelArea": true
+      }
+    },
+    {
+      "id": "edu_goal_1",
+      "type": "educationalGoal",
+      "label": "Rozpoznat manipulační taktiky",
+      "description": "Žáci identifikují a vyhodnotí manipulační techniky v médiích.",
+      "bloomsLevel": "Evaluate",
+      "topicId": "topic_1",
+      "atomicGoalIds": ["atomic_goal_1", "atomic_goal_2"]
+    },
+    {
+      "id": "edu_goal_2",
+      "type": "educationalGoal",
+      "label": "Ověřovat informace",
+      "description": "Žáci aplikují techniky ověřování informací.",
+      "bloomsLevel": "Apply",
+      "topicId": "topic_2",
+      "atomicGoalIds": ["atomic_goal_2"]
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_1",
+      "type": "validates",
+      "source": "activity_1",
+      "target": "atomic_goal_1",
+      "strength": "strong",
+      "metadata": {
+        "assessmentType": "formative"
+      }
+    },
+    {
+      "id": "edge_2",
+      "type": "validates",
+      "source": "activity_2",
+      "target": "atomic_goal_2",
+      "strength": "strong",
+      "metadata": {
+        "assessmentType": "summative"
+      }
+    },
+    {
+      "id": "edge_3",
+      "type": "requiresUnderstanding",
+      "source": "atomic_goal_1",
+      "target": "term_1",
+      "strength": "strong",
+      "metadata": {
+        "criticality": "essential",
+        "order": 1
+      }
+    },
+    {
+      "id": "edge_4",
+      "type": "requiresUnderstanding",
+      "source": "atomic_goal_2",
+      "target": "term_2",
+      "strength": "strong",
+      "metadata": {
+        "criticality": "essential",
+        "order": 1
+      }
+    },
+    {
+      "id": "edge_5",
+      "type": "aggregates",
+      "source": "edu_goal_1",
+      "target": "atomic_goal_1",
+      "strength": "strong",
+      "metadata": {
+        "contributes": 0.5
+      }
+    },
+    {
+      "id": "edge_6",
+      "type": "aggregates",
+      "source": "edu_goal_1",
+      "target": "atomic_goal_2",
+      "strength": "strong",
+      "metadata": {
+        "contributes": 0.5
+      }
+    },
+    {
+      "id": "edge_7",
+      "type": "aggregates",
+      "source": "edu_goal_2",
+      "target": "atomic_goal_2",
+      "strength": "strong",
+      "metadata": {
+        "contributes": 1.0
+      }
+    },
+    {
+      "id": "edge_8",
+      "type": "isPartOf",
+      "source": "edu_goal_1",
+      "target": "topic_1",
+      "strength": "strong"
+    },
+    {
+      "id": "edge_9",
+      "type": "isPartOf",
+      "source": "edu_goal_2",
+      "target": "topic_2",
+      "strength": "strong"
+    },
+    {
+      "id": "edge_10",
+      "type": "isPartOf",
+      "source": "topic_1",
+      "target": "area_1",
+      "strength": "strong",
+      "metadata": {
+        "hierarchyLevel": "topic-to-area"
+      }
+    },
+    {
+      "id": "edge_11",
+      "type": "isPartOf",
+      "source": "topic_2",
+      "target": "area_1",
+      "strength": "strong",
+      "metadata": {
+        "hierarchyLevel": "topic-to-area"
+      }
+    },
+    {
+      "id": "edge_12",
+      "type": "prerequisite",
+      "source": "atomic_goal_1",
+      "target": "atomic_goal_2",
+      "strength": "moderate",
+      "metadata": {
+        "type": "soft",
+        "order": 1,
+        "justification": "Rozpoznání manipulace pomáhá při ověřování zdrojů"
+      }
+    },
+    {
+      "id": "edge_13",
+      "type": "reinforces",
+      "source": "term_1",
+      "target": "term_2",
+      "strength": "moderate",
+      "metadata": {
+        "conceptualDistance": 0.4,
+        "relationship": "Clickbait indikuje nízkou věrohodnost"
+      }
+    },
+    {
+      "id": "edge_14",
+      "type": "exemplifies",
+      "source": "activity_1",
+      "target": "term_1",
+      "strength": "strong"
+    },
+    {
+      "id": "edge_15",
+      "type": "exemplifies",
+      "source": "activity_2",
+      "target": "term_2",
+      "strength": "strong"
+    }
+  ]
+}

@@ -1,1477 +1,461 @@
-(() => {
-  if (typeof cytoscape !== "undefined") {
-    initCytoscapeMap();
-    return;
-  }
-
-  const svg = document.getElementById("concept-map");
-  const infoPanel = document.getElementById("info-panel");
-  const zoomReadout = document.getElementById("zoom-readout");
-  const typeFilterEl = document.getElementById("type-filter");
-  const expertiseFilterEl = document.getElementById("expertise-filter");
-
-  if (!svg || !conceptData) {
-    console.warn("Concept map: missing SVG or data");
-    return;
-  }
-
-  const ns = "http://www.w3.org/2000/svg";
-  const expertiseOrder = ["A1", "A2", "B1", "B2", "C1", "C2"];
-  const baseViewBox = { width: 1200, height: 800 };
-  const bounds = { minX: -200, maxX: 1400, minY: -160, maxY: 1000 };
-  const state = {
-    viewBox: { x: 0, y: 0, width: baseViewBox.width, height: baseViewBox.height },
-    minWidth: 420,
-    maxWidth: 2000,
-    panSession: null,
-    selectedNode: null
-  };
-  let viewBoxNeedsUpdate = false;
-
-  const filters = {
-    types: new Set(["area", "topic", "goal", "activity", "term"]),
-    expertise: new Set()
+﻿(() => {
+  const config = {
+    zoomBreaks: { wide: 0.6, mid: 1.2 },
+    detailByType: {
+      area: "wide",
+      topic: "mid",
+      educationalGoal: "mid",
+      atomicGoal: "close",
+      term: "close",
+      activity: "close"
+    },
+    nodeStyles: {
+      area: { color: "#9bb7ff", border: "#9bb7ff", size: 220, shape: "ellipse" },
+      topic: { color: "#8fd3c8", border: "#8fd3c8", size: 140, shape: "ellipse" },
+      educationalGoal: { color: "#ffb347", border: "#ffb347", size: 110, shape: "ellipse" },
+      atomicGoal: { color: "#a277ff", border: "#a277ff", size: 70, shape: "ellipse" },
+      term: { color: "#7ee0ff", border: "#7ee0ff", size: 60, shape: "diamond" },
+      activity: { color: "#ff7ea9", border: "#ff7ea9", size: 70, shape: "roundrectangle", borderRadius: 16 }
+    },
+    edgeStyles: {
+      validates: { color: "#ff7ea9", width: 3, dash: [6, 6] },
+      requiresUnderstanding: { color: "#7ee0ff", width: 2, dash: [6, 4] },
+      aggregates: { color: "#ffb347", width: 3, dash: [4, 3] },
+      isPartOf: { color: "#9bb7ff", width: 2 },
+      prerequisite: { color: "#a277ff", width: 2.5, dash: [8, 4] },
+      reinforces: { color: "#8fd3c8", width: 2, dash: [5, 3] },
+      exemplifies: { color: "#7ee0ff", width: 2, dash: [3, 2] }
+    }
   };
 
-  const nodes = conceptData.nodes.map((node) => ({
-    ...node,
-    levels: extractLevels(node.expertise)
-  }));
-  const nodesById = new Map(nodes.map((node) => [node.id, node]));
-
-  const edges = conceptData.edges ?? [];
-  const edgesById = new Map(edges.map((edge) => [edge.id, edge]));
-
-  layoutNodes();
-
-  const adjacency = new Map();
-  edges.forEach((edge) => {
-    registerAdjacency(edge.source, edge);
-    registerAdjacency(edge.target, edge);
-  });
-
-  const nodeElements = new Map();
-  const edgeElements = new Map();
-  const nodeVisibility = new Map();
-
-  initFilters();
-  renderGraph();
-  initInteractions();
-  applyFilters();
-  applyViewBox();
-  renderInfoPanel(null);
-
-  function initFilters() {
-    const levelOptions = Array.from(
-      new Set(
-        nodes.flatMap((node) => node.levels)
-      )
-    ).sort((a, b) => expertiseOrder.indexOf(a) - expertiseOrder.indexOf(b));
-
-    if (levelOptions.length === 0) {
-      levelOptions.push("A1");
-    }
-
-    levelOptions.forEach((level) => filters.expertise.add(level));
-
-    createChips(typeFilterEl, [
-      { key: "area", label: "Areas" },
-      { key: "topic", label: "Topics" },
-      { key: "goal", label: "Goals" },
-      { key: "activity", label: "Activities" },
-      { key: "term", label: "Terms" }
-    ], filters.types);
-
-    createChips(
-      expertiseFilterEl,
-      levelOptions.map((level) => ({ key: level, label: level })),
-      filters.expertise
-    );
-  }
-
-  function createChips(container, items, activeSet) {
-    container.innerHTML = "";
-    items.forEach(({ key, label }) => {
-      const chip = document.createElement("button");
-      chip.className = "chip is-active";
-      chip.type = "button";
-      chip.textContent = label;
-      chip.dataset.value = key;
-      chip.addEventListener("click", () => {
-        if (chip.classList.contains("is-active")) {
-          if (activeSet.size <= 1) {
-            return;
-          }
-          chip.classList.remove("is-active");
-          activeSet.delete(key);
-        } else {
-          chip.classList.add("is-active");
-          activeSet.add(key);
-        }
-        applyFilters();
-      });
-      container.appendChild(chip);
-    });
-  }
-
-  function renderGraph() {
-    const areaLayer = document.createElementNS(ns, "g");
-    areaLayer.classList.add("layer", "layer-areas");
-    const topicLayer = document.createElementNS(ns, "g");
-    topicLayer.classList.add("layer", "layer-topics");
-    const linkLayer = document.createElementNS(ns, "g");
-    linkLayer.classList.add("layer", "layer-links");
-    const nodeLayer = document.createElementNS(ns, "g");
-    nodeLayer.classList.add("layer", "layer-nodes");
-
-    svg.appendChild(areaLayer);
-    svg.appendChild(topicLayer);
-    svg.appendChild(linkLayer);
-    svg.appendChild(nodeLayer);
-
-    nodes.forEach((node) => {
-      if (node.type !== "area") {
-        return;
-      }
-      const group = document.createElementNS(ns, "g");
-      group.classList.add("node", "node--area", "detail-wide");
-      group.dataset.id = node.id;
-
-      const circle = document.createElementNS(ns, "circle");
-      circle.setAttribute("cx", node.x);
-      circle.setAttribute("cy", node.y);
-      circle.setAttribute("r", node.radius || 260);
-      circle.setAttribute("filter", "url(#soft-shadow)");
-      group.appendChild(circle);
-
-      const label = document.createElementNS(ns, "text");
-      label.classList.add("node-label", "node-label--area", "area-label");
-      label.setAttribute("x", node.x);
-      label.setAttribute("y", node.y - (node.radius || 260) + 24);
-      label.textContent = node.label;
-      applyLabelSize(label, node);
-      group.appendChild(label);
-
-      attachNodeHandlers(group, node.id);
-      areaLayer.appendChild(group);
-      nodeElements.set(node.id, group);
-    });
-
-    nodes.forEach((node) => {
-      if (node.type === "topic") {
-        const group = document.createElementNS(ns, "g");
-        group.classList.add("node", "node--topic", "detail-wide");
-        group.dataset.id = node.id;
-
-        const circle = document.createElementNS(ns, "circle");
-        circle.setAttribute("cx", node.x);
-        circle.setAttribute("cy", node.y);
-        circle.setAttribute("r", node.radius || 120);
-        circle.setAttribute("filter", "url(#soft-shadow)");
-        group.appendChild(circle);
-
-        const label = document.createElementNS(ns, "text");
-        label.classList.add("node-label", "node-label--topic", "topic-label");
-        label.setAttribute("x", node.x);
-        label.setAttribute("y", node.y);
-        label.textContent = node.label;
-        applyLabelSize(label, node);
-        group.appendChild(label);
-
-        const meta = document.createElementNS(ns, "text");
-        meta.classList.add("topic-label", "topic-meta");
-        meta.setAttribute("x", node.x);
-        meta.setAttribute("y", node.y + 20);
-        meta.textContent = `${node.expertise || ""} ${node.lessons || ""}`.trim();
-        meta.setAttribute("fill", "rgba(255,255,255,0.6)");
-        group.appendChild(meta);
-
-        attachNodeHandlers(group, node.id);
-        topicLayer.appendChild(group);
-        nodeElements.set(node.id, group);
-      }
-    });
-
-    edges.forEach((edge) => {
-      const source = nodesById.get(edge.source);
-      const target = nodesById.get(edge.target);
-      if (!source || !target) {
-        return;
-      }
-      if (isStructuralEdge(source, target, edge.relation)) {
-        return;
-      }
-      const path = document.createElementNS(ns, "path");
-      path.setAttribute("d", `M ${source.x} ${source.y} L ${target.x} ${target.y}`);
-      path.dataset.id = edge.id;
-      path.dataset.source = edge.source;
-      path.dataset.target = edge.target;
-      path.dataset.relation = edge.relation;
-      path.classList.add(`detail-${detailClassForEdge(edge.relation)}`);
-      linkLayer.appendChild(path);
-      edgeElements.set(edge.id, path);
-    });
-
-    nodes.forEach((node) => {
-      if (node.type === "topic" || node.type === "area") {
-        return;
-      }
-      const group = document.createElementNS(ns, "g");
-      group.classList.add("node", `node--${node.type}`, detailClassForNode(node.type));
-      group.dataset.id = node.id;
-
-      if (node.type === "goal") {
-        drawGoal(group, node);
-      } else if (node.type === "activity") {
-        drawActivity(group, node);
-      } else if (node.type === "term") {
-        drawTerm(group, node);
-      }
-
-      attachNodeHandlers(group, node.id);
-      nodeLayer.appendChild(group);
-      nodeElements.set(node.id, group);
-    });
-  }
-
-  function drawGoal(group, node) {
-    const circle = document.createElementNS(ns, "circle");
-    circle.setAttribute("cx", node.x);
-    circle.setAttribute("cy", node.y);
-    circle.setAttribute("r", 26);
-    group.appendChild(circle);
-
-    const text = document.createElementNS(ns, "text");
-    text.setAttribute("x", node.x);
-    text.setAttribute("y", node.y + 42);
-    text.setAttribute("text-anchor", "middle");
-    text.textContent = node.label;
-    text.classList.add("node-label", "node-label--goal");
-    applyLabelSize(text, node);
-    group.appendChild(text);
-  }
-
-  function drawActivity(group, node) {
-    const width = Math.max(120, node.label.length * 6);
-    const height = 44;
-    const rect = document.createElementNS(ns, "rect");
-    rect.setAttribute("x", node.x - width / 2);
-    rect.setAttribute("y", node.y - height / 2);
-    rect.setAttribute("rx", 14);
-    rect.setAttribute("ry", 14);
-    rect.setAttribute("width", width);
-    rect.setAttribute("height", height);
-    group.appendChild(rect);
-
-    const text = document.createElementNS(ns, "text");
-    text.setAttribute("x", node.x);
-    text.setAttribute("y", node.y + 4);
-    text.setAttribute("text-anchor", "middle");
-    text.textContent = node.label;
-    text.classList.add("node-label", "node-label--activity");
-    applyLabelSize(text, node);
-    group.appendChild(text);
-  }
-
-  function drawTerm(group, node) {
-    const size = 10;
-    const points = [
-      `${node.x} ${node.y - size}`,
-      `${node.x + size} ${node.y}`,
-      `${node.x} ${node.y + size}`,
-      `${node.x - size} ${node.y}`
-    ].join(" ");
-    const polygon = document.createElementNS(ns, "polygon");
-    polygon.setAttribute("points", points);
-    group.appendChild(polygon);
-
-    const text = document.createElementNS(ns, "text");
-    text.setAttribute("x", node.x);
-    text.setAttribute("y", node.y + size + 18);
-    text.setAttribute("text-anchor", "middle");
-    text.textContent = node.label;
-    text.classList.add("node-label", "node-label--term");
-    applyLabelSize(text, node);
-    group.appendChild(text);
-  }
-
-  function applyLabelSize(element, node) {
-    if (!node || !node.labelSize) {
-      return;
-    }
-    const value = typeof node.labelSize === "number" ? `${node.labelSize}px` : node.labelSize;
-    element.style.fontSize = value;
-  }
-
-  function attachNodeHandlers(element, nodeId) {
-    element.addEventListener("mouseenter", () => {
-      highlightNode(nodeId);
-    });
-
-    element.addEventListener("mouseleave", () => {
-      if (!state.panSession) {
-        clearHover();
-      }
-    });
-
-    element.addEventListener("click", (event) => {
-      event.stopPropagation();
-      setSelectedNode(nodeId);
-    });
-  }
-
-  function initInteractions() {
-    svg.addEventListener("click", (event) => {
-      if (!event.target.closest(".node")) {
-        setSelectedNode(null);
-        clearHover();
-      }
-    });
-
-    document.querySelectorAll(".zoom-buttons button").forEach((button) => {
-      button.addEventListener("click", () => {
-        const direction = button.dataset.zoom === "in" ? -1 : 1;
-        const factor = Math.pow(1.2, direction);
-        const center = {
-          x: state.viewBox.x + state.viewBox.width / 2,
-          y: state.viewBox.y + state.viewBox.height / 2
-        };
-        zoomAtPoint(center, factor);
-      });
-    });
-
-    svg.addEventListener("wheel", (event) => {
-      event.preventDefault();
-      const direction = event.deltaY > 0 ? 1 : -1;
-      const factor = Math.pow(1.12, direction);
-      const point = mapFromClient(event);
-      zoomAtPoint(point, factor);
-    });
-
-    svg.addEventListener("pointerdown", (event) => {
-      if (event.button !== 2) {
-        return;
-      }
-      event.preventDefault();
-      state.panSession = {
-        pointerId: event.pointerId,
-        origin: mapFromClient(event),
-        start: { ...state.viewBox }
-      };
-      svg.setPointerCapture(event.pointerId);
-    });
-
-    svg.addEventListener("pointermove", (event) => {
-      if (!state.panSession || state.panSession.pointerId !== event.pointerId) {
-        return;
-      }
-      event.preventDefault();
-      const current = mapFromClient(event);
-      const dx = current.x - state.panSession.origin.x;
-      const dy = current.y - state.panSession.origin.y;
-      state.viewBox.x = state.panSession.start.x - dx;
-      state.viewBox.y = state.panSession.start.y - dy;
-      clampViewBox();
-      requestViewBoxRender();
-    });
-
-    ["pointerup", "pointercancel", "pointerleave"].forEach((type) => {
-      svg.addEventListener(type, (event) => {
-        if (state.panSession && state.panSession.pointerId === event.pointerId) {
-          svg.releasePointerCapture(event.pointerId);
-          state.panSession = null;
-        }
-      });
-    });
-
-    svg.addEventListener("contextmenu", (event) => {
-      event.preventDefault();
-    });
-
-    window.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        setSelectedNode(null);
-        clearHover();
-      }
-    });
-  }
-
-  function mapFromClient(event) {
-    const rect = svg.getBoundingClientRect();
-    const x = state.viewBox.x + ((event.clientX - rect.left) / rect.width) * state.viewBox.width;
-    const y = state.viewBox.y + ((event.clientY - rect.top) / rect.height) * state.viewBox.height;
-    return { x, y };
-  }
-
-  function zoomAtPoint(point, factor) {
-    const prevWidth = state.viewBox.width;
-    const prevHeight = state.viewBox.height;
-    let newWidth = prevWidth * factor;
-    newWidth = clamp(newWidth, state.minWidth, state.maxWidth);
-    const newHeight = (baseViewBox.height / baseViewBox.width) * newWidth;
-
-    const scaleX = (point.x - state.viewBox.x) / prevWidth;
-    const scaleY = (point.y - state.viewBox.y) / prevHeight;
-
-    state.viewBox.x = point.x - scaleX * newWidth;
-    state.viewBox.y = point.y - scaleY * newHeight;
-    state.viewBox.width = newWidth;
-    state.viewBox.height = newHeight;
-    clampViewBox();
-    requestViewBoxRender();
-  }
-
-  function clampViewBox() {
-    const { width, height } = state.viewBox;
-    const maxX = bounds.maxX - width;
-    const maxY = bounds.maxY - height;
-    state.viewBox.x = clamp(state.viewBox.x, bounds.minX, Math.max(bounds.minX, maxX));
-    state.viewBox.y = clamp(state.viewBox.y, bounds.minY, Math.max(bounds.minY, maxY));
-  }
-
-  function applyViewBox() {
-    const { x, y, width, height } = state.viewBox;
-    svg.setAttribute("viewBox", `${x} ${y} ${width} ${height}`);
-    updateDetailLevel(width);
-    const zoomPercent = Math.round((baseViewBox.width / width) * 100);
-    if (zoomReadout) {
-      zoomReadout.textContent = `${zoomPercent}%`;
-    }
-  }
-
-  function requestViewBoxRender() {
-    if (viewBoxNeedsUpdate) {
-      return;
-    }
-    viewBoxNeedsUpdate = true;
-    requestAnimationFrame(() => {
-      viewBoxNeedsUpdate = false;
-      applyViewBox();
-    });
-  }
-
-  function updateDetailLevel(width) {
-    let level = "wide";
-    if (width <= 650) {
-      level = "close";
-    } else if (width <= 1100) {
-      level = "mid";
-    }
-    svg.dataset.detail = level;
-  }
-
-  function applyFilters() {
-    nodes.forEach((node) => {
-      const isTypeVisible = filters.types.has(node.type);
-      const matchesExpertise =
-        node.levels.length === 0 ||
-        node.levels.some((level) => filters.expertise.has(level));
-      const visible = isTypeVisible && matchesExpertise;
-      const element = nodeElements.get(node.id);
-      if (element) {
-        element.classList.toggle("is-hidden", !visible);
-      }
-      nodeVisibility.set(node.id, visible);
-    });
-
-    edges.forEach((edge) => {
-      const visible = (nodeVisibility.get(edge.source) ?? true) && (nodeVisibility.get(edge.target) ?? true);
-      const element = edgeElements.get(edge.id);
-      if (element) {
-        element.classList.toggle("is-hidden", !visible);
-      }
-    });
-
-    if (state.selectedNode && !nodeVisibility.get(state.selectedNode)) {
-      setSelectedNode(null);
-    }
-  }
-
-  function highlightNode(nodeId) {
-    clearHover();
-    const nodeElement = nodeElements.get(nodeId);
-    if (!nodeElement || nodeElement.classList.contains("is-hidden")) {
-      return;
-    }
-    nodeElement.classList.add("is-focused");
-    const neighbors = adjacency.get(nodeId) ?? [];
-    neighbors.forEach((link) => {
-      if (!nodeVisibility.get(link.nodeId)) {
-        return;
-      }
-      nodeElements.get(link.nodeId)?.classList.add("is-linked");
-      edgeElements.get(link.edgeId)?.classList.add("is-linked");
-    });
-  }
-
-  function clearHover() {
-    nodeElements.forEach((element) => {
-      element.classList.remove("is-focused", "is-linked");
-    });
-    edgeElements.forEach((element) => {
-      element.classList.remove("is-linked");
-    });
-  }
-
-  function setSelectedNode(nodeId) {
-    if (state.selectedNode) {
-      nodeElements.get(state.selectedNode)?.classList.remove("is-selected");
-    }
-    state.selectedNode = nodeId;
-    if (nodeId) {
-      nodeElements.get(nodeId)?.classList.add("is-selected");
-      renderInfoPanel(nodesById.get(nodeId));
-    } else {
-      renderInfoPanel(null);
-    }
-  }
-
-  function renderInfoPanel(node) {
-    infoPanel.innerHTML = "";
-    if (!node) {
-      const wrapper = document.createElement("div");
-      wrapper.className = "info-panel__empty";
-      wrapper.innerHTML = `
-        <h2>Select a node</h2>
-        <p>Highlight an area, topic, goal, term, or activity to see how it supports the path to mastery.</p>
-        <ul>
-          <li>Zoom out to compare overlapping areas and topics.</li>
-          <li>Zoom in for atomic goals, activities, and key terms.</li>
-          <li>Filters help surface the right expertise band.</li>
-        </ul>
-      `;
-      infoPanel.appendChild(wrapper);
-      return;
-    }
-
-    const header = document.createElement("div");
-    header.className = "detail-header";
-    const pill = document.createElement("span");
-    pill.className = "detail-pill";
-    pill.textContent = node.type.toUpperCase();
-    header.appendChild(pill);
-
-    const title = document.createElement("h2");
-    title.textContent = node.label;
-    header.appendChild(title);
-
-    const meta = document.createElement("div");
-    meta.className = "meta";
-    const metaParts = [];
-    if (node.expertise) {
-      metaParts.push(`Expertise ${node.expertise}`);
-    }
-    if (node.lessons) {
-      metaParts.push(node.lessons);
-    }
-    if (node.activityType) {
-      metaParts.push(`${capitalize(node.activityType)} activity`);
-    }
-    if (metaParts.length) {
-      meta.textContent = metaParts.join(" | ");
-      header.appendChild(meta);
-    }
-
-    infoPanel.appendChild(header);
-
-    if (node.description) {
-      const desc = document.createElement("p");
-      desc.textContent = node.description;
-      infoPanel.appendChild(desc);
-    }
-
-    const connections = adjacency.get(node.id) ?? [];
-    if (connections.length) {
-      const section = document.createElement("div");
-      section.className = "detail-section";
-      const heading = document.createElement("h3");
-      heading.textContent = "Connections";
-      section.appendChild(heading);
-
-      const list = document.createElement("ul");
-      connections
-        .map((link) => {
-          const other = nodesById.get(link.nodeId);
-          return other ? { other, relation: link.relation } : null;
-        })
-        .filter(Boolean)
-        .sort((a, b) => a.other.type.localeCompare(b.other.type))
-        .forEach(({ other, relation }) => {
-          const item = document.createElement("li");
-          item.textContent = `${describeRelation(node, other, relation)}: ${other.label}`;
-          list.appendChild(item);
-        });
-      section.appendChild(list);
-      infoPanel.appendChild(section);
-    }
-  }
-
-  function describeRelation(node, other, relation) {
-    if (relation === "validates") {
-      return node.type === "activity" ? "Validates" : other.type === "activity" ? "Validated by" : "Connected";
-    }
-    if (relation === "contains") {
-      if ((node.type === "area" && other.type !== "area") || (node.type === "topic" && other.type !== "topic")) {
-        return "Includes";
-      }
-      if ((other.type === "area" && node.type !== "area") || (other.type === "topic" && node.type !== "topic")) {
-        return "Part of";
-      }
-    }
-    if (relation === "relates") {
-      return "Relates to";
-    }
-    return "Connected to";
-  }
-
-  function registerAdjacency(nodeId, edge) {
-    if (!adjacency.has(nodeId)) {
-      adjacency.set(nodeId, []);
-    }
-    const neighborId = edge.source === nodeId ? edge.target : edge.source;
-    adjacency.get(nodeId).push({
-      nodeId: neighborId,
-      relation: edge.relation,
-      edgeId: edge.id
-    });
-  }
-
-  function extractLevels(value = "") {
-    const normalized = value.replace(/\s+/g, "").replace(/\u2013/g, "-");
-    const rangeParts = normalized.split("-");
-    if (rangeParts.length === 2) {
-      const start = rangeParts[0];
-      const end = rangeParts[1];
-      const startIndex = expertiseOrder.indexOf(start);
-      const endIndex = expertiseOrder.indexOf(end);
-      if (startIndex !== -1 && endIndex !== -1 && endIndex >= startIndex) {
-        return expertiseOrder.slice(startIndex, endIndex + 1);
-      }
-    }
-    const matches = normalized.match(/[A-C][1-2]/g);
-    return matches ? matches : [];
-  }
-
-  function detailClassForNode(type) {
-    if (type === "activity") {
-      return "detail-close";
-    }
-    if (type === "goal" || type === "term") {
-      return "detail-mid";
-    }
-    return "detail-wide";
-  }
-
-  function detailClassForEdge(relation) {
-    if (relation === "validates") {
-      return "close";
-    }
-    if (relation === "relates") {
-      return "mid";
-    }
-    return "wide";
-  }
-
-  function clamp(value, min, max) {
-    return Math.min(Math.max(value, min), max);
-  }
-
-  function capitalize(value = "") {
-    return value.charAt(0).toUpperCase() + value.slice(1);
-  }
-
-  function isStructuralEdge(source, target, relation) {
-    if (relation !== "contains") {
-      return false;
-    }
-    const pair = new Set([source.type, target.type]);
-    const isAreaTopic = pair.has("area") && pair.has("topic");
-    const isTopicGoal = pair.has("topic") && pair.has("goal");
-    return isAreaTopic || isTopicGoal;
-  }
-
-  function layoutNodes() {
-    const topicGoals = new Map();
-    const goalPrimaryTopic = new Map();
-    const goalTerms = new Map();
-    const goalActivities = new Map();
-
-    edges.forEach((edge) => {
-      const source = nodesById.get(edge.source);
-      const target = nodesById.get(edge.target);
-      if (!source || !target) {
-        return;
-      }
-      if (edge.relation === "contains" && source.type === "topic" && target.type === "goal") {
-        registerGoalToTopic(target.id, source.id);
-      } else if (edge.relation === "contains" && target.type === "topic" && source.type === "goal") {
-        registerGoalToTopic(source.id, target.id);
-      } else if (edge.relation === "relates") {
-        const goalId = source.type === "goal" ? source.id : target.type === "goal" ? target.id : null;
-        const termId = source.type === "term" ? source.id : target.type === "term" ? target.id : null;
-        if (goalId && termId) {
-          if (!goalTerms.has(goalId)) {
-            goalTerms.set(goalId, []);
-          }
-          goalTerms.get(goalId).push(termId);
-        }
-      } else if (edge.relation === "validates") {
-        const goalId = source.type === "goal" ? source.id : target.type === "goal" ? target.id : null;
-        const activityId = source.type === "activity" ? source.id : target.type === "activity" ? target.id : null;
-        if (goalId && activityId) {
-          if (!goalActivities.has(goalId)) {
-            goalActivities.set(goalId, []);
-          }
-          goalActivities.get(goalId).push(activityId);
-        }
-      }
-    });
-
-    function registerGoalToTopic(goalId, topicId) {
-      if (!goalPrimaryTopic.has(goalId)) {
-        goalPrimaryTopic.set(goalId, topicId);
-      }
-      if (!topicGoals.has(topicId)) {
-        topicGoals.set(topicId, []);
-      }
-      if (!topicGoals.get(topicId).includes(goalId)) {
-        topicGoals.get(topicId).push(goalId);
-      }
-    }
-
-    const goalAngles = new Map();
-    topicGoals.forEach((goalIds, topicId) => {
-      const topic = nodesById.get(topicId);
-      if (!topic || goalIds.length === 0) {
-        return;
-      }
-      const goalRadius = Math.max(60, (topic.radius || 110) - 35);
-      const startAngle = -Math.PI / 2;
-      const step = (2 * Math.PI) / goalIds.length;
-      goalIds.forEach((goalId, index) => {
-        const angle = startAngle + index * step;
-        const goal = nodesById.get(goalId);
-        if (!goal) {
-          return;
-        }
-        goal.x = topic.x + goalRadius * Math.cos(angle);
-        goal.y = topic.y + goalRadius * Math.sin(angle);
-        goalAngles.set(goalId, angle);
-      });
-    });
-
-    goalTerms.forEach((termIds, goalId) => {
-      const angle = goalAngles.get(goalId);
-      const topicId = goalPrimaryTopic.get(goalId);
-      const topic = topicId ? nodesById.get(topicId) : null;
-      if (!topic || angle == null) {
-        return;
-      }
-      const baseRadius = (topic.radius || 110) + 35;
-      termIds.forEach((termId, index) => {
-        const term = nodesById.get(termId);
-        if (!term) {
-          return;
-        }
-        const offsetAngle = angle + (index % 2 === 0 ? 1 : -1) * 0.25 * Math.ceil(index / 2);
-        const radius = baseRadius + index * 22;
-        term.x = topic.x + radius * Math.cos(offsetAngle);
-        term.y = topic.y + radius * Math.sin(offsetAngle);
-      });
-    });
-
-    goalActivities.forEach((activityIds, goalId) => {
-      const angle = goalAngles.get(goalId);
-      const topicId = goalPrimaryTopic.get(goalId);
-      const topic = topicId ? nodesById.get(topicId) : null;
-      if (!topic || angle == null) {
-        return;
-      }
-      const baseRadius = (topic.radius || 110) + 95;
-      activityIds.forEach((activityId, index) => {
-        const activity = nodesById.get(activityId);
-        if (!activity) {
-          return;
-        }
-        const offsetAngle = angle + ((index % 2 === 0 ? 1 : -1) * 0.35 * Math.ceil(index / 2));
-        const radius = baseRadius + index * 30;
-        activity.x = topic.x + radius * Math.cos(offsetAngle);
-        activity.y = topic.y + radius * Math.sin(offsetAngle);
-      });
-    });
-  }
-
-  function initCytoscapeMap() {
+  fetch("simpledata.json")
+    .then((r) => r.json())
+    .then((payload) => initCytoscape(payload))
+    .catch((err) => console.error("Failed to load simpledata.json", err));
+
+  function initCytoscape(conceptData) {
     const container = document.getElementById("concept-map");
     const infoPanel = document.getElementById("info-panel");
     const zoomReadout = document.getElementById("zoom-readout");
     const typeFilterEl = document.getElementById("type-filter");
     const expertiseFilterEl = document.getElementById("expertise-filter");
-
-    const hasData = typeof conceptData !== "undefined";
-    if (!container || !infoPanel || !hasData) {
-      console.warn("Cytoscape concept map: missing container or data");
+    if (!container || !conceptData) {
+      console.warn("Missing container or data");
       return;
     }
 
     const expertiseOrder = ["A1", "A2", "B1", "B2", "C1", "C2"];
     const filters = {
-      types: new Set(["area", "topic", "goal", "activity", "term"]),
+      types: new Set(["area", "topic", "educationalGoal", "atomicGoal", "activity", "term"]),
       expertise: new Set()
     };
 
-    const nodes = conceptData.nodes.map((node) => ({
+    const nodes = conceptData.nodes.map(normalizeNode).map((node) => ({
       ...node,
-      levels: extractLevels(node.expertise)
+      levels: extractLevels(node.expertise, expertiseOrder),
+      detailLevel: config.detailByType[node.type] || "close"
     }));
-    const edges = conceptData.edges ?? [];
-    const nodesById = new Map(nodes.map((node) => [node.id, node]));
-    applyLegacyLayout(nodes, edges, nodesById);
-    const adjacency = buildAdjacency(edges);
+    const edges = (conceptData.edges || []).map((edge) => ({
+      ...edge,
+      relation: edge.type || edge.relation || "related"
+    }));
+    const nodesById = new Map(nodes.map((n) => [n.id, n]));
+    applyRadialLayout(nodes, edges, nodesById);
+    const adjacency = buildAdjacency(nodes, edges);
+
+    initFilters(nodes, filters, typeFilterEl, expertiseFilterEl, expertiseOrder, applyFilters);
 
     const cy = cytoscape({
       container,
       elements: buildElements(nodes, edges),
-      style: buildStyles(),
-      layout: { name: "preset" },
-      minZoom: 0.35,
+      style: buildStyles(config),
+      layout: { name: "cose", padding: 40 },
+      minZoom: 0.3,
       maxZoom: 2.5,
       wheelSensitivity: 0.2,
       autoungrabify: true,
       boxSelectionEnabled: false
     });
 
-    cy.fit(cy.nodes(), 30);
-    window.addEventListener("resize", () => cy.resize());
-
-    const state = {
-      selectedNodeId: null
-    };
-
-    initFilters();
-    initInteractions();
-    applyFilters();
-    renderInfoPanel(null);
+    const state = { selectedId: null, detailLevel: currentDetail(cy.zoom()) };
     updateZoomReadout();
+    applyFilters();
+    renderInfo(null);
 
-    function buildElements(nodeList, edgeList) {
-      const nodeElements = nodeList.map((node) => {
-        const { width, height, shape } = nodeDimensions(node);
-        return {
-          data: {
-            id: node.id,
-            label: node.label,
-            type: node.type,
-            expertise: node.expertise || "",
-            lessons: node.lessons || "",
-            description: node.description || "",
-            activityType: node.activityType || "",
-            width,
-            height,
-            shape
-          },
-          position: { x: node.x || 0, y: node.y || 0 },
-          classes: `node-${node.type}`
-        };
-      });
+    cy.on("tap", "node", (evt) => {
+      evt.preventDefault();
+      const id = evt.target.id();
+      setSelected(id);
+    });
 
-      const edgeElements = edgeList.map((edge) => ({
-        data: {
-          id: edge.id,
-          source: edge.source,
-          target: edge.target,
-          relation: edge.relation || ""
-        },
-        classes: edge.relation ? `edge-${edge.relation}` : ""
-      }));
-
-      return [...nodeElements, ...edgeElements];
-    }
-
-    function buildStyles() {
-      return [
-      {
-        selector: "node",
-        style: {
-          label: "data(label)",
-          "font-size": 14,
-          "font-family": "Inter, 'Segoe UI', system-ui, -apple-system, sans-serif",
-          "text-wrap": "wrap",
-          "text-max-width": 160,
-          "text-valign": "center",
-          "text-halign": "center",
-          color: "#f5f5f5",
-          "background-color": "rgba(0,0,0,0)",
-          "border-width": 2,
-          "border-color": "rgba(255, 255, 255, 0.6)",
-          width: "data(width)",
-          height: "data(height)",
-          shape: "data(shape)",
-          "text-outline-width": 0
-        }
-      },
-      {
-        selector: "node.node-area",
-        style: {
-          "background-color": "rgba(0,0,0,0)",
-          "border-color": "rgba(138, 200, 255, 0.35)",
-          "font-size": 22,
-          "font-weight": 600,
-          shape: "ellipse"
-        }
-      },
-      {
-        selector: "node.node-topic",
-        style: {
-          "background-color": "rgba(0,0,0,0)",
-          "border-color": "rgba(248, 180, 78, 0.7)",
-          "font-size": 16,
-          shape: "ellipse"
-        }
-      },
-      {
-        selector: "node.node-goal",
-        style: {
-          "background-color": "rgba(0,0,0,0)",
-          "border-color": "rgba(126, 224, 255, 0.8)",
-          "font-size": 12,
-          shape: "ellipse"
-        }
-      },
-      {
-        selector: "node.node-activity",
-        style: {
-          "background-color": "rgba(0,0,0,0)",
-          "border-color": "rgba(255, 126, 169, 0.8)",
-          shape: "roundrectangle",
-          "border-radius": 18,
-          "font-size": 13
-        }
-      },
-      {
-        selector: "node.node-term",
-        style: {
-          "background-color": "rgba(0,0,0,0)",
-          "border-color": "rgba(215, 255, 126, 0.8)",
-          shape: "diamond",
-          "font-size": 12
-        }
-      },
-        {
-          selector: "edge",
-          style: {
-            width: 2,
-            "line-color": "rgba(255, 255, 255, 0.25)",
-            "curve-style": "straight"
-          }
-        },
-        {
-          selector: ".edge-validates",
-          style: {
-            "line-style": "dashed",
-            "line-color": "rgba(255, 126, 169, 0.5)",
-            width: 3
-          }
-        },
-        {
-          selector: ".edge-relates",
-          style: {
-            "line-style": "dashed",
-            "line-color": "rgba(126, 224, 255, 0.55)"
-          }
-        },
-        {
-          selector: "node.is-focused",
-          style: {
-            "border-color": "#fff",
-            "border-width": 4,
-            "shadow-blur": 25,
-            "shadow-color": "rgba(255, 255, 255, 0.4)"
-          }
-        },
-        {
-          selector: "edge.is-linked",
-          style: {
-            "line-color": "#fff",
-            width: 4
-          }
-        },
-        {
-          selector: "node.is-linked",
-          style: {
-            "border-color": "#fff",
-            "border-width": 3
-          }
-        },
-        {
-          selector: ".is-selected",
-          style: {
-            "border-color": "#fff",
-            "border-width": 5,
-            "shadow-blur": 30,
-            "shadow-color": "rgba(255, 255, 255, 0.55)"
-          }
-        },
-        {
-          selector: ".is-hidden",
-          style: {
-            display: "none"
-          }
-        }
-      ];
-    }
-
-    function nodeDimensions(node) {
-      if (node.type === "area") {
-        const size = (node.radius || 260) * 2;
-        return { width: size, height: size, shape: "ellipse" };
+    cy.on("tap", (evt) => {
+      if (evt.target === cy) {
+        setSelected(null);
       }
-      if (node.type === "topic") {
-        const size = (node.radius || 120) * 2;
-        return { width: size, height: size, shape: "ellipse" };
-      }
-      if (node.type === "activity") {
-        const width = Math.max(200, (node.label || "").length * 7);
-        return { width, height: 70, shape: "roundrectangle" };
-      }
-      if (node.type === "term") {
-        return { width: 70, height: 70, shape: "diamond" };
-      }
-      return { width: 60, height: 60, shape: "ellipse" };
-    }
+    });
 
-    function initFilters() {
-      const levelOptions = Array.from(
-        new Set(
-          nodes.flatMap((node) => node.levels)
-        )
-      ).sort((a, b) => expertiseOrder.indexOf(a) - expertiseOrder.indexOf(b));
+    cy.on("mouseover", "node", (evt) => {
+      highlight(evt.target);
+    });
+    cy.on("mouseout", "node", () => clearHover());
 
-      if (levelOptions.length === 0) {
-        levelOptions.push("A1");
-      }
-
-      levelOptions.forEach((level) => filters.expertise.add(level));
-
-      createChips(typeFilterEl, [
-        { key: "area", label: "Areas" },
-        { key: "topic", label: "Topics" },
-        { key: "goal", label: "Goals" },
-        { key: "activity", label: "Activities" },
-        { key: "term", label: "Terms" }
-      ], filters.types);
-
-      createChips(
-        expertiseFilterEl,
-        levelOptions.map((level) => ({ key: level, label: level })),
-        filters.expertise
-      );
-    }
-
-    function createChips(container, items, activeSet) {
-      container.innerHTML = "";
-      items.forEach(({ key, label }) => {
-        const chip = document.createElement("button");
-        chip.className = "chip is-active";
-        chip.type = "button";
-        chip.textContent = label;
-        chip.dataset.value = key;
-        chip.addEventListener("click", () => {
-          if (chip.classList.contains("is-active")) {
-            if (activeSet.size <= 1) {
-              return;
-            }
-            chip.classList.remove("is-active");
-            activeSet.delete(key);
-          } else {
-            chip.classList.add("is-active");
-            activeSet.add(key);
-          }
-          applyFilters();
-        });
-        container.appendChild(chip);
-      });
-    }
-
-    function initInteractions() {
-      cy.on("mouseover", "node", (event) => {
-        highlightNode(event.target);
-      });
-
-      cy.on("mouseout", "node", () => {
-        clearHover();
-      });
-
-      cy.on("tap", "node", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        setSelectedNode(event.target.id());
-      });
-
-      cy.on("tap", (event) => {
-        if (event.target === cy) {
-          setSelectedNode(null);
-          clearHover();
-        }
-      });
-
-      cy.on("zoom", () => updateZoomReadout());
-
-      document.querySelectorAll(".zoom-buttons button").forEach((button) => {
-        button.addEventListener("click", () => {
-          const direction = button.dataset.zoom === "in" ? 1 : -1;
-          zoomBy(direction);
-        });
-      });
-
-      window.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
-          setSelectedNode(null);
-          clearHover();
-        }
-      });
-    }
-
-    function zoomBy(direction) {
-      const current = cy.zoom();
-      const factor = Math.pow(1.2, direction);
-      const target = clamp(current * factor, cy.minZoom(), cy.maxZoom());
-      cy.zoom({ level: target, renderedPosition: { x: container.clientWidth / 2, y: container.clientHeight / 2 } });
+    cy.on("zoom", () => {
+      state.detailLevel = currentDetail(cy.zoom());
       updateZoomReadout();
-    }
+      applyFilters();
+    });
+
+    document.querySelectorAll(".zoom-buttons button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const direction = btn.dataset.zoom === "in" ? 1 : -1;
+        const factor = Math.pow(1.2, direction);
+        const target = clamp(cy.zoom() * factor, cy.minZoom(), cy.maxZoom());
+        cy.zoom({ level: target, renderedPosition: { x: container.clientWidth / 2, y: container.clientHeight / 2 } });
+      });
+    });
 
     function applyFilters() {
-      nodes.forEach((node) => {
-        const isTypeVisible = filters.types.has(node.type);
-        const matchesExpertise = node.levels.length === 0 || node.levels.some((level) => filters.expertise.has(level));
-        const visible = isTypeVisible && matchesExpertise;
-        const cyNode = cy.getElementById(node.id);
-        if (cyNode.empty()) {
-          return;
-        }
-        if (visible) {
-          cyNode.removeClass("is-hidden");
-        } else {
-          cyNode.addClass("is-hidden");
-        }
+      cy.batch(() => {
+        nodes.forEach((node) => {
+          const nodeEl = cy.getElementById(node.id);
+          const typeVisible = filters.types.has(node.type);
+          const expVisible = node.levels.length === 0 || node.levels.some((l) => filters.expertise.has(l));
+          const lodVisible = detailRank(node.detailLevel) <= detailRank(state.detailLevel);
+          nodeEl.toggleClass("is-hidden", !(typeVisible && expVisible && lodVisible));
+        });
+        edges.forEach((edge) => {
+          const e = cy.getElementById(edge.id);
+          const srcVisible = !cy.getElementById(edge.source).hasClass("is-hidden");
+          const tgtVisible = !cy.getElementById(edge.target).hasClass("is-hidden");
+          e.toggleClass("is-hidden", !(srcVisible && tgtVisible));
+        });
       });
-
-      edges.forEach((edge) => {
-        const sourceVisible = !cy.getElementById(edge.source).hasClass("is-hidden");
-        const targetVisible = !cy.getElementById(edge.target).hasClass("is-hidden");
-        const cyEdge = cy.getElementById(edge.id);
-        if (cyEdge.empty()) {
-          return;
-        }
-        if (sourceVisible && targetVisible) {
-          cyEdge.removeClass("is-hidden");
-        } else {
-          cyEdge.addClass("is-hidden");
-        }
-      });
-
-      if (state.selectedNodeId && cy.getElementById(state.selectedNodeId).hasClass("is-hidden")) {
-        setSelectedNode(null);
+      if (state.selectedId && cy.getElementById(state.selectedId).hasClass("is-hidden")) {
+        setSelected(null);
       }
     }
 
-    function highlightNode(node) {
-      if (!node || node.hasClass("is-hidden")) {
-        return;
-      }
-      clearHover();
-      node.addClass("is-focused");
-      const neighbors = node.closedNeighborhood();
-      neighbors.edges().addClass("is-linked");
-      neighbors.nodes().forEach((neighbor) => {
-        if (neighbor.id() !== node.id()) {
-          neighbor.addClass("is-linked");
-        }
-      });
+    function setSelected(id) {
+      if (state.selectedId) cy.getElementById(state.selectedId).removeClass("is-selected");
+      state.selectedId = id;
+      if (id) cy.getElementById(id).addClass("is-selected");
+      renderInfo(id ? nodesById.get(id) : null);
     }
 
-    function clearHover() {
-      cy.elements().removeClass("is-focused");
-      cy.elements().removeClass("is-linked");
-    }
-
-    function setSelectedNode(nodeId) {
-      if (state.selectedNodeId) {
-        const prev = cy.getElementById(state.selectedNodeId);
-        if (!prev.empty()) {
-          prev.removeClass("is-selected");
-        }
-      }
-      state.selectedNodeId = nodeId;
-      if (nodeId) {
-        const element = cy.getElementById(nodeId);
-        if (!element.empty()) {
-          element.addClass("is-selected");
-        }
-        renderInfoPanel(nodesById.get(nodeId));
-      } else {
-        renderInfoPanel(null);
-      }
-    }
-
-    function renderInfoPanel(node) {
+    function renderInfo(node) {
       infoPanel.innerHTML = "";
       if (!node) {
-        const wrapper = document.createElement("div");
-        wrapper.className = "info-panel__empty";
-        wrapper.innerHTML = `
-          <h2>Select a node</h2>
-          <p>Highlight an area, topic, goal, term, or activity to see how it supports the path to mastery.</p>
-          <ul>
-            <li>Zoom out to compare overlapping areas and topics.</li>
-            <li>Zoom in for atomic goals, activities, and key terms.</li>
-            <li>Filters help surface the right expertise band.</li>
-          </ul>
-        `;
-        infoPanel.appendChild(wrapper);
+        const wrap = document.createElement("div");
+        wrap.className = "info-panel__empty";
+        wrap.innerHTML = `<h2>Vyber uzel</h2><p>Zoomem odhalíš další vrstvy (oblast → téma → atomický cíl).</p>`;
+        infoPanel.appendChild(wrap);
         return;
       }
-
       const header = document.createElement("div");
       header.className = "detail-header";
-
       const pill = document.createElement("span");
       pill.className = "detail-pill";
       pill.textContent = node.type.toUpperCase();
-      header.appendChild(pill);
-
       const title = document.createElement("h2");
       title.textContent = node.label;
+      header.appendChild(pill);
       header.appendChild(title);
+      infoPanel.appendChild(header);
 
       const metaParts = [];
-      if (node.expertise) {
-        metaParts.push(`Expertise ${node.expertise}`);
-      }
-      if (node.lessons) {
-        metaParts.push(node.lessons);
-      }
-      if (node.activityType) {
-        metaParts.push(`${capitalize(node.activityType)} activity`);
-      }
+      if (node.expertise) metaParts.push(`Expertise ${node.expertise}`);
+      if (node.bloomsLevel) metaParts.push(`Bloom ${node.bloomsLevel}`);
+      if (node.level && node.type === "topic") metaParts.push(`Level ${node.level}`);
       if (metaParts.length) {
         const meta = document.createElement("div");
         meta.className = "meta";
         meta.textContent = metaParts.join(" | ");
-        header.appendChild(meta);
+        infoPanel.appendChild(meta);
       }
 
-      infoPanel.appendChild(header);
+      const desc = document.createElement("p");
+      desc.textContent = node.fullText || node.definition || node.description || node.content?.prompt || "";
+      if (desc.textContent) infoPanel.appendChild(desc);
 
-      if (node.description) {
-        const desc = document.createElement("p");
-        desc.textContent = node.description;
-        infoPanel.appendChild(desc);
-      }
-
-      const connections = adjacency.get(node.id) ?? [];
+      const connections = adjacency.get(node.id) || [];
       if (connections.length) {
         const section = document.createElement("div");
         section.className = "detail-section";
-        const heading = document.createElement("h3");
-        heading.textContent = "Connections";
-        section.appendChild(heading);
-
+        const h3 = document.createElement("h3");
+        h3.textContent = "Connections";
+        section.appendChild(h3);
         const list = document.createElement("ul");
-        connections
-          .map((link) => {
-            const other = nodesById.get(link.nodeId);
-            return other ? { other, relation: link.relation } : null;
-          })
-          .filter(Boolean)
-          .sort((a, b) => a.other.type.localeCompare(b.other.type))
-          .forEach(({ other, relation }) => {
-            const item = document.createElement("li");
-            item.textContent = `${describeRelation(node, other, relation)}: ${other.label}`;
-            list.appendChild(item);
-          });
-
+        connections.forEach(({ nodeId, relation }) => {
+          const other = nodesById.get(nodeId);
+          if (!other) return;
+          const li = document.createElement("li");
+          li.textContent = `${relation}: ${other.label}`;
+          list.appendChild(li);
+        });
         section.appendChild(list);
         infoPanel.appendChild(section);
       }
     }
 
-    function describeRelation(node, other, relation) {
-      if (relation === "validates") {
-        return node.type === "activity" ? "Validates" : other.type === "activity" ? "Validated by" : "Connected";
-      }
-      if (relation === "contains") {
-        if ((node.type === "area" && other.type !== "area") || (node.type === "topic" && other.type !== "topic")) {
-          return "Includes";
-        }
-        if ((other.type === "area" && node.type !== "area") || (other.type === "topic" && node.type !== "topic")) {
-          return "Part of";
-        }
-      }
-      if (relation === "relates") {
-        return "Relates to";
-      }
-      return "Connected to";
+    function highlight(el) {
+      clearHover();
+      el.addClass("is-focused");
+      const neigh = el.closedNeighborhood();
+      neigh.nodes().addClass("is-linked");
+      neigh.edges().addClass("is-linked");
     }
 
-    function buildAdjacency(edgeList) {
-      const map = new Map();
-      edgeList.forEach((edge) => {
-        register(edge.source, edge);
-        register(edge.target, edge);
-      });
-
-      function register(nodeId, edge) {
-        if (!map.has(nodeId)) {
-          map.set(nodeId, []);
-        }
-        const neighborId = edge.source === nodeId ? edge.target : edge.source;
-        map.get(nodeId).push({ nodeId: neighborId, relation: edge.relation, edgeId: edge.id });
-      }
-
-      return map;
-    }
-
-    function applyLegacyLayout(nodes, edges, nodesById) {
-      const topicGoals = new Map();
-      const goalPrimaryTopic = new Map();
-      const goalTerms = new Map();
-      const goalActivities = new Map();
-
-      edges.forEach((edge) => {
-        const source = nodesById.get(edge.source);
-        const target = nodesById.get(edge.target);
-        if (!source || !target) {
-          return;
-        }
-        if (edge.relation === "contains" && source.type === "topic" && target.type === "goal") {
-          registerGoalToTopic(target.id, source.id);
-        } else if (edge.relation === "contains" && target.type === "topic" && source.type === "goal") {
-          registerGoalToTopic(source.id, target.id);
-        } else if (edge.relation === "relates") {
-          const goalId = source.type === "goal" ? source.id : target.type === "goal" ? target.id : null;
-          const termId = source.type === "term" ? source.id : target.type === "term" ? target.id : null;
-          if (goalId && termId) {
-            if (!goalTerms.has(goalId)) {
-              goalTerms.set(goalId, []);
-            }
-            goalTerms.get(goalId).push(termId);
-          }
-        } else if (edge.relation === "validates") {
-          const goalId = source.type === "goal" ? source.id : target.type === "goal" ? target.id : null;
-          const activityId = source.type === "activity" ? source.id : target.type === "activity" ? target.id : null;
-          if (goalId && activityId) {
-            if (!goalActivities.has(goalId)) {
-              goalActivities.set(goalId, []);
-            }
-            goalActivities.get(goalId).push(activityId);
-          }
-        }
-      });
-
-      function registerGoalToTopic(goalId, topicId) {
-        if (!goalPrimaryTopic.has(goalId)) {
-          goalPrimaryTopic.set(goalId, topicId);
-        }
-        if (!topicGoals.has(topicId)) {
-          topicGoals.set(topicId, []);
-        }
-        if (!topicGoals.get(topicId).includes(goalId)) {
-          topicGoals.get(topicId).push(goalId);
-        }
-      }
-
-      const goalAngles = new Map();
-      topicGoals.forEach((goalIds, topicId) => {
-        const topic = nodesById.get(topicId);
-        if (!topic || goalIds.length === 0) {
-          return;
-        }
-        const goalRadius = Math.max(60, (topic.radius || 110) - 35);
-        const startAngle = -Math.PI / 2;
-        const step = (2 * Math.PI) / goalIds.length;
-        goalIds.forEach((goalId, index) => {
-          const angle = startAngle + index * step;
-          const goal = nodesById.get(goalId);
-          if (!goal) {
-            return;
-          }
-          goal.x = topic.x + goalRadius * Math.cos(angle);
-          goal.y = topic.y + goalRadius * Math.sin(angle);
-          goalAngles.set(goalId, angle);
-        });
-      });
-
-      goalTerms.forEach((termIds, goalId) => {
-        const angle = goalAngles.get(goalId);
-        const topicId = goalPrimaryTopic.get(goalId);
-        const topic = topicId ? nodesById.get(topicId) : null;
-        if (!topic || angle == null) {
-          return;
-        }
-        const baseRadius = (topic.radius || 110) + 35;
-        termIds.forEach((termId, index) => {
-          const term = nodesById.get(termId);
-          if (!term) {
-            return;
-          }
-          const offsetAngle = angle + (index % 2 === 0 ? 1 : -1) * 0.25 * Math.ceil(index / 2);
-          const radius = baseRadius + index * 22;
-          term.x = topic.x + radius * Math.cos(offsetAngle);
-          term.y = topic.y + radius * Math.sin(offsetAngle);
-        });
-      });
-
-      goalActivities.forEach((activityIds, goalId) => {
-        const angle = goalAngles.get(goalId);
-        const topicId = goalPrimaryTopic.get(goalId);
-        const topic = topicId ? nodesById.get(topicId) : null;
-        if (!topic || angle == null) {
-          return;
-        }
-        const baseRadius = (topic.radius || 110) + 95;
-        activityIds.forEach((activityId, index) => {
-          const activity = nodesById.get(activityId);
-          if (!activity) {
-            return;
-          }
-          const offsetAngle = angle + ((index % 2 === 0 ? 1 : -1) * 0.35 * Math.ceil(index / 2));
-          const radius = baseRadius + index * 30;
-          activity.x = topic.x + radius * Math.cos(offsetAngle);
-          activity.y = topic.y + radius * Math.sin(offsetAngle);
-        });
-      });
-    }
-
-    function extractLevels(value = "") {
-      const normalized = value.replace(/\s+/g, "").replace(/\u2013/g, "-");
-      const rangeParts = normalized.split("-");
-      if (rangeParts.length === 2) {
-        const startIndex = expertiseOrder.indexOf(rangeParts[0]);
-        const endIndex = expertiseOrder.indexOf(rangeParts[1]);
-        if (startIndex !== -1 && endIndex !== -1 && endIndex >= startIndex) {
-          return expertiseOrder.slice(startIndex, endIndex + 1);
-        }
-      }
-      const matches = normalized.match(/[A-C][1-2]/g);
-      return matches ? matches : [];
+    function clearHover() {
+      cy.elements().removeClass("is-focused is-linked");
     }
 
     function updateZoomReadout() {
-      if (!zoomReadout) {
-        return;
-      }
-      const percent = Math.round(cy.zoom() * 100);
-      zoomReadout.textContent = `${percent}%`;
-    }
-
-    function capitalize(value = "") {
-      return value.charAt(0).toUpperCase() + value.slice(1);
-    }
-
-    function clamp(value, min, max) {
-      return Math.min(Math.max(value, min), max);
+      if (!zoomReadout) return;
+      zoomReadout.textContent = `${Math.round(cy.zoom() * 100)}%`;
     }
   }
 
+  function initFilters(nodes, filters, typeFilterEl, expertiseFilterEl, expertiseOrder, onChange) {
+    const levelOptions = Array.from(
+      new Set(
+        nodes.flatMap((node) => extractLevels(node.expertise, expertiseOrder))
+      )
+    ).sort((a, b) => expertiseOrder.indexOf(a) - expertiseOrder.indexOf(b));
+    if (levelOptions.length === 0) levelOptions.push("A1");
+    levelOptions.forEach((level) => filters.expertise.add(level));
+
+    if (typeFilterEl) {
+      createChips(typeFilterEl, [
+        { key: "area", label: "Areas" },
+        { key: "topic", label: "Topics" },
+        { key: "educationalGoal", label: "Educational goals" },
+        { key: "atomicGoal", label: "Atomic goals" },
+        { key: "activity", label: "Activities" },
+        { key: "term", label: "Terms" }
+      ], filters.types, onChange);
+    }
+
+    if (expertiseFilterEl) {
+      createChips(
+        expertiseFilterEl,
+        levelOptions.map((level) => ({ key: level, label: level })),
+        filters.expertise,
+        onChange
+      );
+    }
+  }
+
+  function createChips(container, items, activeSet, onChange) {
+    container.innerHTML = "";
+    items.forEach(({ key, label }) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip is-active";
+      chip.dataset.value = key;
+      chip.textContent = label;
+      chip.addEventListener("click", () => {
+        const active = chip.classList.contains("is-active");
+        if (active && activeSet.size <= 1) return;
+        chip.classList.toggle("is-active");
+        if (active) {
+          activeSet.delete(key);
+        } else {
+          activeSet.add(key);
+        }
+        onChange?.();
+      });
+      container.appendChild(chip);
+    });
+  }
+
+  function normalizeNode(node) {
+    if (node.type === "topic" && node.metadata?.isTopLevelArea) {
+      return { ...node, type: "area" };
+    }
+    return node;
+  }
+
+  function buildAdjacency(nodes, edges) {
+    const map = new Map();
+    edges.forEach((edge) => {
+      [edge.source, edge.target].forEach((id) => {
+        if (!map.has(id)) map.set(id, []);
+        map.get(id).push({ nodeId: id === edge.source ? edge.target : edge.source, relation: edge.relation });
+      });
+    });
+    return map;
+  }
+
+  function buildElements(nodes, edges) {
+    const nodeElements = nodes.map((node) => {
+      const style = config.nodeStyles[node.type] || config.nodeStyles.atomicGoal;
+      return {
+        data: {
+          id: node.id,
+          label: node.label,
+          type: node.type,
+          detailLevel: node.detailLevel
+        },
+        position: node.x && node.y ? { x: node.x, y: node.y } : undefined,
+        classes: [`node-${node.type}`, `detail-${node.detailLevel}`].join(" "),
+        scratch: { cfg: style, width: style.size, height: style.size }
+      };
+    });
+    const edgeElements = edges.map((edge) => ({
+      data: { id: edge.id, source: edge.source, target: edge.target, relation: edge.relation },
+      classes: `edge-${edge.relation}`
+    }));
+    return [...nodeElements, ...edgeElements];
+  }
+
+  function buildStyles(cfg) {
+    const baseNode = {
+      label: "data(label)",
+      "font-size": 12,
+      "font-family": "Inter, 'Segoe UI', system-ui, -apple-system, sans-serif",
+      "text-valign": "center",
+      "text-halign": "center",
+      "text-wrap": "wrap",
+      "text-max-width": 140,
+      color: "#f5f5f5",
+      "text-outline-width": 0,
+      "background-color": "transparent",
+      "border-width": 2,
+      width: "data(width)",
+      height: "data(height)",
+      shape: "data(shape)"
+    };
+
+    const styles = [
+      { selector: "node", style: baseNode },
+      ...Object.entries(cfg.nodeStyles).map(([key, val]) => ({
+        selector: `.node-${key}`,
+        style: {
+          "background-color": "transparent",
+          "border-color": val.border,
+          width: val.size,
+          height: val.size,
+          shape: val.shape,
+          "border-radius": val.borderRadius || 0
+        }
+      })),
+      { selector: "edge", style: { width: 2, "line-color": "rgba(255,255,255,0.2)", "curve-style": "straight" } },
+      ...Object.entries(cfg.edgeStyles).map(([rel, val]) => ({
+        selector: `.edge-${rel}`,
+        style: {
+          "line-color": val.color,
+          width: val.width,
+          "line-style": val.dash ? "dashed" : "solid",
+          "line-dash-pattern": val.dash || []
+        }
+      })),
+      { selector: ".is-hidden", style: { display: "none" } },
+      { selector: "node.is-selected", style: { "border-width": 4, "border-color": "#fff" } },
+      { selector: "node.is-focused", style: { "border-color": "#fff", "border-width": 3 } },
+      { selector: "node.is-linked", style: { "border-color": "#fff" } },
+      { selector: "edge.is-linked", style: { "line-color": "#fff", width: 3 } }
+    ];
+    return styles;
+  }
+
+  function applyRadialLayout(nodes, edges, nodesById) {
+    const areas = nodes.filter((n) => n.type === "area");
+    const topics = nodes.filter((n) => n.type === "topic");
+    const centerX = 600;
+    const centerY = 400;
+    const areaRadius = 260;
+
+    areas.forEach((area, idx) => {
+      const angle = areas.length <= 1 ? -Math.PI / 2 : (-Math.PI / 2) + (idx * (2 * Math.PI) / areas.length);
+      area.x = centerX + areaRadius * Math.cos(angle);
+      area.y = centerY + areaRadius * Math.sin(angle);
+      area.radius = area.radius || 200;
+    });
+
+    topics.forEach((topic, idx) => {
+      const parentArea = areas[0];
+      const baseAngle = (2 * Math.PI / Math.max(topics.length, 1)) * idx - Math.PI / 2;
+      const ring = (parentArea?.radius || 200) + 140;
+      topic.x = (parentArea?.x || centerX) + ring * Math.cos(baseAngle);
+      topic.y = (parentArea?.y || centerY) + ring * Math.sin(baseAngle);
+      topic.radius = topic.radius || 120;
+    });
+
+    const topicGoals = new Map();
+    nodes.forEach((node) => {
+      if (node.type === "atomicGoal") {
+        if (!topicGoals.has(node.topicId)) topicGoals.set(node.topicId, []);
+        topicGoals.get(node.topicId).push(node.id);
+      }
+    });
+
+    const goalAngles = new Map();
+    topicGoals.forEach((goalIds, topicId) => {
+      const topic = nodesById.get(topicId);
+      if (!topic) return;
+      const radius = (topic.radius || 120) - 30;
+      const step = (2 * Math.PI) / goalIds.length;
+      goalIds.forEach((goalId, idx) => {
+        const angle = -Math.PI / 2 + idx * step;
+        const goal = nodesById.get(goalId);
+        if (!goal) return;
+        goal.x = topic.x + radius * Math.cos(angle);
+        goal.y = topic.y + radius * Math.sin(angle);
+        goalAngles.set(goalId, angle);
+      });
+    });
+
+    edges.forEach((edge) => {
+      const source = nodesById.get(edge.source);
+      const target = nodesById.get(edge.target);
+      if (!source || !target) return;
+      if (edge.relation === "requiresUnderstanding" && source.type === "atomicGoal" && target.type === "term") {
+        const topicId = source.topicId;
+        const topic = topicId ? nodesById.get(topicId) : null;
+        const angle = goalAngles.get(source.id) || 0;
+        if (!topic) return;
+        const base = (topic.radius || 120) + 50;
+        const idx = (edge.metadata?.order || 0);
+        target.x = topic.x + (base + idx * 25) * Math.cos(angle + 0.35);
+        target.y = topic.y + (base + idx * 25) * Math.sin(angle + 0.35);
+      }
+      if (edge.relation === "validates" && source.type === "activity" && target.type === "atomicGoal") {
+        const topicId = target.topicId;
+        const topic = topicId ? nodesById.get(topicId) : null;
+        const angle = goalAngles.get(target.id) || 0;
+        if (!topic) return;
+        const base = (topic.radius || 120) + 110;
+        source.x = topic.x + (base) * Math.cos(angle - 0.4);
+        source.y = topic.y + (base) * Math.sin(angle - 0.4);
+      }
+    });
+  }
+
+  function currentDetail(zoom) {
+    if (zoom <= config.zoomBreaks.wide) return "wide";
+    if (zoom <= config.zoomBreaks.mid) return "mid";
+    return "close";
+  }
+
+  function detailRank(level) {
+    if (level === "wide") return 0;
+    if (level === "mid") return 1;
+    return 2;
+  }
+
+  function extractLevels(value = "", order) {
+    const normalized = value.replace(/\s+/g, "").replace(/\u2013/g, "-");
+    const parts = normalized.split("-");
+    if (parts.length === 2) {
+      const start = order.indexOf(parts[0]);
+      const end = order.indexOf(parts[1]);
+      if (start >= 0 && end >= start) return order.slice(start, end + 1);
+    }
+    const matches = normalized.match(/[A-C][1-2]/g);
+    return matches || [];
+  }
+
+  function clamp(v, min, max) {
+    return Math.min(Math.max(v, min), max);
+  }
 })();
