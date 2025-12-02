@@ -293,13 +293,13 @@ p {
 
 /* SVG layers */
 .layer-topics circle {
-  fill: rgba(248, 180, 78, 0.08);
+  fill: transparent;
   stroke: rgba(248, 180, 78, 0.45);
   stroke-width: 2;
 }
 
 .layer-areas circle {
-  fill: rgba(138, 200, 255, 0.06);
+  fill: transparent;
   stroke: rgba(138, 200, 255, 0.35);
   stroke-width: 2;
 }
@@ -376,27 +376,27 @@ p {
 }
 
 .node--goal circle {
-  fill: rgba(126, 224, 255, 0.15);
+  fill: transparent;
   stroke: rgba(126, 224, 255, 0.8);
 }
 
 .node--activity rect {
-  fill: rgba(255, 126, 169, 0.16);
+  fill: transparent;
   stroke: rgba(255, 126, 169, 0.8);
 }
 
 .node--term polygon {
-  fill: rgba(215, 255, 126, 0.15);
+  fill: transparent;
   stroke: rgba(215, 255, 126, 0.8);
 }
 
 .node--area circle {
-  fill: rgba(138, 200, 255, 0.04);
+  fill: transparent;
   stroke: rgba(138, 200, 255, 0.6);
 }
 
 .node--topic circle {
-  fill: rgba(248, 180, 78, 0.1);
+  fill: transparent;
   stroke: rgba(248, 180, 78, 0.7);
 }
 

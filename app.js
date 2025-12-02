@@ -890,73 +890,73 @@
 
     function buildStyles() {
       return [
-        {
-          selector: "node",
-          style: {
-            label: "data(label)",
-            "font-size": 14,
-            "font-family": "Inter, 'Segoe UI', system-ui, -apple-system, sans-serif",
-            "text-wrap": "wrap",
-            "text-max-width": 160,
-            "text-valign": "center",
-            "text-halign": "center",
-            color: "#f5f5f5",
-            "background-color": "#7ee0ff",
-            "border-width": 2,
-            "border-color": "rgba(255, 255, 255, 0.6)",
-            width: "data(width)",
-            height: "data(height)",
-            shape: "data(shape)",
-            "text-outline-width": 0
-          }
-        },
-        {
-          selector: "node.node-area",
-          style: {
-            "background-color": "rgba(138, 200, 255, 0.06)",
-            "border-color": "rgba(138, 200, 255, 0.35)",
-            "font-size": 22,
-            "font-weight": 600,
-            shape: "ellipse"
-          }
-        },
-        {
-          selector: "node.node-topic",
-          style: {
-            "background-color": "rgba(248, 180, 78, 0.1)",
-            "border-color": "rgba(248, 180, 78, 0.7)",
-            "font-size": 16,
-            shape: "ellipse"
-          }
-        },
-        {
-          selector: "node.node-goal",
-          style: {
-            "background-color": "rgba(126, 224, 255, 0.15)",
-            "border-color": "rgba(126, 224, 255, 0.8)",
-            "font-size": 12,
-            shape: "ellipse"
-          }
-        },
-        {
-          selector: "node.node-activity",
-          style: {
-            "background-color": "rgba(255, 126, 169, 0.16)",
-            "border-color": "rgba(255, 126, 169, 0.8)",
-            shape: "roundrectangle",
-            "border-radius": 18,
-            "font-size": 13
-          }
-        },
-        {
-          selector: "node.node-term",
-          style: {
-            "background-color": "rgba(215, 255, 126, 0.15)",
-            "border-color": "rgba(215, 255, 126, 0.8)",
-            shape: "diamond",
-            "font-size": 12
-          }
-        },
+      {
+        selector: "node",
+        style: {
+          label: "data(label)",
+          "font-size": 14,
+          "font-family": "Inter, 'Segoe UI', system-ui, -apple-system, sans-serif",
+          "text-wrap": "wrap",
+          "text-max-width": 160,
+          "text-valign": "center",
+          "text-halign": "center",
+          color: "#f5f5f5",
+          "background-color": "rgba(0,0,0,0)",
+          "border-width": 2,
+          "border-color": "rgba(255, 255, 255, 0.6)",
+          width: "data(width)",
+          height: "data(height)",
+          shape: "data(shape)",
+          "text-outline-width": 0
+        }
+      },
+      {
+        selector: "node.node-area",
+        style: {
+          "background-color": "rgba(0,0,0,0)",
+          "border-color": "rgba(138, 200, 255, 0.35)",
+          "font-size": 22,
+          "font-weight": 600,
+          shape: "ellipse"
+        }
+      },
+      {
+        selector: "node.node-topic",
+        style: {
+          "background-color": "rgba(0,0,0,0)",
+          "border-color": "rgba(248, 180, 78, 0.7)",
+          "font-size": 16,
+          shape: "ellipse"
+        }
+      },
+      {
+        selector: "node.node-goal",
+        style: {
+          "background-color": "rgba(0,0,0,0)",
+          "border-color": "rgba(126, 224, 255, 0.8)",
+          "font-size": 12,
+          shape: "ellipse"
+        }
+      },
+      {
+        selector: "node.node-activity",
+        style: {
+          "background-color": "rgba(0,0,0,0)",
+          "border-color": "rgba(255, 126, 169, 0.8)",
+          shape: "roundrectangle",
+          "border-radius": 18,
+          "font-size": 13
+        }
+      },
+      {
+        selector: "node.node-term",
+        style: {
+          "background-color": "rgba(0,0,0,0)",
+          "border-color": "rgba(215, 255, 126, 0.8)",
+          shape: "diamond",
+          "font-size": 12
+        }
+      },
         {
           selector: "edge",
           style: {
