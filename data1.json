@@ -114,14 +114,14 @@
   "edges": [
     {
       "id": "edge_1",
-      "type": "contains",
+      "type": "agregates",
       "source": "area_1",
       "target": "topic_1",
       "strength": "strong"
     },
     {
       "id": "edge_2",
-      "type": "contains",
+      "type": "agregates",
       "source": "area_1",
       "target": "topic_2",
       "strength": "strong"

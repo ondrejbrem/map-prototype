@@ -10,8 +10,8 @@
       activity: "close"
     },
     nodeStyles: {
-      area: { color: "#9bb7ff", border: "#9bb7ff", size: 220, shape: "ellipse" },
-      topic: { color: "#8fd3c8", border: "#8fd3c8", size: 140, shape: "ellipse" },
+      area: { color: "#9bb7ff", border: "#9bb7ff", fill: "rgba(155, 183, 255, 0.1)", borderStyle: "dashed", size: 260, shape: "ellipse" },
+      topic: { color: "#8fd3c8", border: "#8fd3c8", fill: "rgba(143, 211, 200, 0.15)", size: 150, shape: "ellipse" },
       educationalGoal: { color: "#ffb347", border: "#ffb347", size: 110, shape: "ellipse" },
       atomicGoal: { color: "#a277ff", border: "#a277ff", size: 70, shape: "ellipse" },
       term: { color: "#7ee0ff", border: "#7ee0ff", size: 60, shape: "diamond" },
@@ -449,8 +449,9 @@
       ...Object.entries(cfg.nodeStyles).map(([key, val]) => ({
         selector: `.node-${key}`,
         style: {
-          "background-color": "transparent",
+          "background-color": val.fill || "transparent",
           "border-color": val.border,
+          "border-style": val.borderStyle || "solid",
           width: val.size,
           height: val.size,
           shape: val.shape,
@@ -510,11 +511,19 @@
       topic.radius = topic.radius || 140;
     });
 
+    const aggregateChildren = new Map();
     const topicGoals = new Map();
     nodes.forEach((node) => {
       if (node.type === "atomicGoal") {
         if (!topicGoals.has(node.topicId)) topicGoals.set(node.topicId, []);
         topicGoals.get(node.topicId).push(node.id);
+      }
+    });
+
+    edges.forEach((edge) => {
+      if (edge.relation === "aggregates") {
+        if (!aggregateChildren.has(edge.source)) aggregateChildren.set(edge.source, []);
+        aggregateChildren.get(edge.source).push(edge.target);
       }
     });
 
@@ -531,6 +540,24 @@
         goal.x = topic.x + radius * Math.cos(angle);
         goal.y = topic.y + radius * Math.sin(angle);
         goalAngles.set(goalId, angle);
+      });
+    });
+
+    const positionedAggregates = new Set();
+    aggregateChildren.forEach((childIds, parentId) => {
+      const parent = nodesById.get(parentId);
+      if (!parent || !childIds.length) return;
+      const parentRadius = getNodeRadius(parent);
+      const angleStep = (2 * Math.PI) / childIds.length;
+      childIds.forEach((childId, idx) => {
+        const child = nodesById.get(childId);
+        if (!child || positionedAggregates.has(childId)) return;
+        const childRadius = getNodeRadius(child);
+        const ring = Math.max(parentRadius - childRadius * 0.4, childRadius + 30);
+        const angle = -Math.PI / 2 + idx * angleStep;
+        child.x = (parent.x || centerX) + ring * Math.cos(angle);
+        child.y = (parent.y || centerY) + ring * Math.sin(angle);
+        positionedAggregates.add(childId);
       });
     });
 
@@ -571,6 +598,13 @@
   function findParentArea(topicId, edges) {
     const edge = edges.find((e) => e.relation === "isPartOf" && e.source === topicId);
     return edge ? edge.target : null;
+  }
+
+  function getNodeRadius(node) {
+    if (!node) return 60;
+    if (node.radius) return node.radius;
+    const size = config.nodeStyles[node.type]?.size || 80;
+    return size / 2;
   }
 
   function currentDetail(zoom) {
