@@ -361,6 +361,7 @@
   function applyRadialLayout(nodes, edges, nodesById) {
     const areas = nodes.filter((n) => n.type === "area");
     const topics = nodes.filter((n) => n.type === "topic");
+    const eduGoals = nodes.filter((n) => n.type === "educationalGoal");
     const centerX = 600;
     const centerY = 400;
     const areaRadius = 260;
@@ -369,16 +370,26 @@
       const angle = areas.length <= 1 ? -Math.PI / 2 : (-Math.PI / 2) + (idx * (2 * Math.PI) / areas.length);
       area.x = centerX + areaRadius * Math.cos(angle);
       area.y = centerY + areaRadius * Math.sin(angle);
-      area.radius = area.radius || 200;
+      area.radius = area.radius || 220;
     });
 
-    topics.forEach((topic, idx) => {
-      const parentArea = areas[0];
-      const baseAngle = (2 * Math.PI / Math.max(topics.length, 1)) * idx - Math.PI / 2;
-      const ring = (parentArea?.radius || 200) + 140;
+    const topicsByArea = new Map();
+    topics.forEach((topic) => {
+      const parentAreaId = topic.parentTopicId || findParentArea(topic.id, edges);
+      if (!topicsByArea.has(parentAreaId)) topicsByArea.set(parentAreaId, []);
+      topicsByArea.get(parentAreaId).push(topic.id);
+    });
+
+    topics.forEach((topic) => {
+      const parentAreaId = topic.parentTopicId || findParentArea(topic.id, edges);
+      const parentArea = areas.find((a) => a.id === parentAreaId) || areas[0];
+      const siblings = topicsByArea.get(parentAreaId) || topics.map((t) => t.id);
+      const idx = siblings.indexOf(topic.id);
+      const baseAngle = siblings.length ? (-Math.PI / 2) + (idx * (2 * Math.PI) / siblings.length) : -Math.PI / 2;
+      const ring = Math.max((parentArea?.radius || 200) * 0.6, 180);
       topic.x = (parentArea?.x || centerX) + ring * Math.cos(baseAngle);
       topic.y = (parentArea?.y || centerY) + ring * Math.sin(baseAngle);
-      topic.radius = topic.radius || 120;
+      topic.radius = topic.radius || 140;
     });
 
     const topicGoals = new Map();
@@ -393,7 +404,7 @@
     topicGoals.forEach((goalIds, topicId) => {
       const topic = nodesById.get(topicId);
       if (!topic) return;
-      const radius = (topic.radius || 120) - 30;
+      const radius = Math.max((topic.radius || 140) - 40, 60);
       const step = (2 * Math.PI) / goalIds.length;
       goalIds.forEach((goalId, idx) => {
         const angle = -Math.PI / 2 + idx * step;
@@ -403,6 +414,14 @@
         goal.y = topic.y + radius * Math.sin(angle);
         goalAngles.set(goalId, angle);
       });
+    });
+
+    eduGoals.forEach((eg) => {
+      const topic = nodesById.get(eg.topicId);
+      if (topic) {
+        eg.x = topic.x;
+        eg.y = topic.y - (topic.radius || 140) + 40;
+      }
     });
 
     edges.forEach((edge) => {
@@ -429,6 +448,11 @@
         source.y = topic.y + (base) * Math.sin(angle - 0.4);
       }
     });
+  }
+
+  function findParentArea(topicId, edges) {
+    const edge = edges.find((e) => e.relation === "isPartOf" && e.source === topicId);
+    return edge ? edge.target : null;
   }
 
   function currentDetail(zoom) {
