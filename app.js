@@ -492,23 +492,53 @@
       area.radius = area.radius || 220;
     });
 
-    const topicsByArea = new Map();
-    topics.forEach((topic) => {
-      const parentAreaId = topic.parentTopicId || findParentArea(topic.id, edges);
-      if (!topicsByArea.has(parentAreaId)) topicsByArea.set(parentAreaId, []);
-      topicsByArea.get(parentAreaId).push(topic.id);
+    const aggregateAlias = new Set(["agregates", "aggregates"]);
+    const areaTopics = new Map();
+    edges.forEach((edge) => {
+      if (edge.relation === "isPartOf") {
+        if (!areaTopics.has(edge.target)) {
+          areaTopics.set(edge.target, []);
+        }
+        areaTopics.get(edge.target).push(edge.source);
+      } else if (aggregateAlias.has(edge.relation) && nodesById.get(edge.source)?.type === "area") {
+        const parentAreaId = edge.source;
+        if (!areaTopics.has(parentAreaId)) {
+          areaTopics.set(parentAreaId, []);
+        }
+        areaTopics.get(parentAreaId).push(edge.target);
+      }
     });
 
-    topics.forEach((topic) => {
-      const parentAreaId = topic.parentTopicId || findParentArea(topic.id, edges);
-      const parentArea = areas.find((a) => a.id === parentAreaId) || areas[0];
-      const siblings = topicsByArea.get(parentAreaId) || topics.map((t) => t.id);
-      const idx = siblings.indexOf(topic.id);
-      const baseAngle = siblings.length ? (-Math.PI / 2) + (idx * (2 * Math.PI) / siblings.length) : -Math.PI / 2;
-      const ring = Math.max((parentArea?.radius || 200) * 0.6, 180);
-      topic.x = (parentArea?.x || centerX) + ring * Math.cos(baseAngle);
-      topic.y = (parentArea?.y || centerY) + ring * Math.sin(baseAngle);
+    const placedTopics = new Set();
+    areaTopics.forEach((topicIds, areaId) => {
+      const area = nodesById.get(areaId);
+      if (!area || !topicIds.length) {
+        return;
+      }
+      const parentRadius = area.radius || getNodeRadius(area);
+      const step = (2 * Math.PI) / topicIds.length;
+      topicIds.forEach((topicId, index) => {
+        const topic = nodesById.get(topicId);
+        if (!topic || topic.type !== "topic") {
+          return;
+        }
+        topic.radius = topic.radius || 140;
+        const childRadius = topic.radius;
+        const distance = Math.max(parentRadius - childRadius * 0.55, childRadius + 30);
+        const angle = -Math.PI / 2 + index * step;
+        topic.x = (area.x || centerX) + distance * Math.cos(angle);
+        topic.y = (area.y || centerY) + distance * Math.sin(angle);
+        placedTopics.add(topic.id);
+      });
+    });
+
+    const unplacedTopics = topics.filter((topic) => !placedTopics.has(topic.id));
+    unplacedTopics.forEach((topic, idx) => {
       topic.radius = topic.radius || 140;
+      const baseAngle = unplacedTopics.length ? (-Math.PI / 2) + (idx * (2 * Math.PI) / unplacedTopics.length) : -Math.PI / 2;
+      const ring = Math.max((areaRadius + 180), topic.radius + 40);
+      topic.x = centerX + ring * Math.cos(baseAngle);
+      topic.y = centerY + ring * Math.sin(baseAngle);
     });
 
     const aggregateChildren = new Map();
@@ -521,7 +551,7 @@
     });
 
     edges.forEach((edge) => {
-      if (edge.relation === "aggregates") {
+      if (aggregateAlias.has(edge.relation)) {
         if (!aggregateChildren.has(edge.source)) aggregateChildren.set(edge.source, []);
         aggregateChildren.get(edge.source).push(edge.target);
       }
