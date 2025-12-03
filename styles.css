@@ -16,11 +16,15 @@
 body {
   margin: 0;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1.5rem clamp(1rem, 3vw, 2.5rem) 2rem;
   background: radial-gradient(circle at top, #121826, #050607 55%);
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+  gap: 1.5rem;
+  padding: 1.5rem clamp(1rem, 3vw, 2.5rem);
+  height: 100vh;
 }
 
 h1,
@@ -164,6 +168,28 @@ p {
   cursor: pointer;
 }
 
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+}
+
+.side-panel > .controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.side-panel > .controls,
+.side-panel > .app-header {
+  flex-shrink: 0;
+}
+
+.side-panel {
+  overflow-y: auto;
+}
+
 .chips {
   margin-top: 0.5rem;
   display: flex;
@@ -224,13 +250,6 @@ p {
   color: rgba(255, 255, 255, 0.65);
 }
 
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(16rem, 20rem);
-  gap: 1rem;
-  min-height: 60vh;
-}
-
 .map-panel {
   position: relative;
   background: rgba(14, 18, 33, 0.95);
@@ -238,6 +257,7 @@ p {
   border: 1px solid rgba(255, 255, 255, 0.08);
   overflow: hidden;
   min-height: 26rem;
+  height: 100%;
 }
 
 #concept-map {
@@ -271,11 +291,12 @@ p {
   background: rgba(14, 18, 33, 0.95);
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 1.5rem;
-  min-height: 26rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .info-panel__empty ul {
