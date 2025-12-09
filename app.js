@@ -91,7 +91,7 @@
     defaultDataset: "clusters.json"
   };
 
-  const runtime = { cy: null, clusterOverlay: null };
+  const runtime = { cy: null, clusterOverlays: [] };
   const datasetSelectEl = document.getElementById("dataset-select");
   const uploadInputEl = document.getElementById("data-upload");
   const zoomButtons = document.querySelectorAll(".zoom-buttons button");
@@ -197,7 +197,7 @@
     teardown();
     const result = initCytoscape(data);
     runtime.cy = result?.cy || null;
-    runtime.clusterOverlay = result?.clusterOverlay || null;
+    runtime.clusterOverlays = result?.clusterOverlays || [];
   }
 
   function teardown() {
@@ -205,9 +205,9 @@
       runtime.cy.destroy();
       runtime.cy = null;
     }
-    if (runtime.clusterOverlay) {
-      runtime.clusterOverlay.destroy();
-      runtime.clusterOverlay = null;
+    if (runtime.clusterOverlays?.length) {
+      runtime.clusterOverlays.forEach((overlay) => overlay?.destroy?.());
+      runtime.clusterOverlays = [];
     }
     const infoPanel = document.getElementById("info-panel");
     if (infoPanel) {
@@ -228,7 +228,7 @@
 
     const expertiseOrder = ["A1", "A2", "B1", "B2", "C1", "C2"];
     const filters = {
-      types: new Set(["area", "topic", "educationalGoal", "atomicGoal", "activity", "term"]),
+      types: new Set(["areaCluster", "area", "topic", "educationalGoal", "atomicGoal", "activity", "term"]),
       expertise: new Set()
     };
 
@@ -274,39 +274,19 @@
       boxSelectionEnabled: false
     });
 
-    const baseClusters = buildAreaClusters(nodes, config.nodeStyles.area || {}, clusterDefinitions);
-    const combinedClusters = baseClusters.slice();
-    if (Array.isArray(conceptData.areaClusters) && conceptData.areaClusters.length) {
-      conceptData.areaClusters.forEach((ac) => {
-        const nodeIdsSet = new Set();
-        // include any nodes that belong to the listed areas (area node itself and its member nodes)
-        ac.areaIds.forEach((areaId) => {
-          nodes.forEach((n) => {
-            if (n.id === areaId || n.areaId === areaId) nodeIdsSet.add(n.id);
-          });
-          // include the area node id itself in case it wasn't added
-          nodeIdsSet.add(areaId);
-        });
-        combinedClusters.push({
-          id: ac.id,
-          label: ac.label || ac.id,
-          nodeIds: Array.from(nodeIdsSet),
-          stroke: ac.stroke || config.nodeStyles.area?.border || config.nodeStyles.area?.color || "#9bb7ff",
-          fill: ac.fill || config.nodeStyles.area?.fill || "rgba(155, 183, 255, 0.08)",
-          padding: ac.padding ?? 80
-        });
-      });
-    }
+    const areaClusters = buildAreaClusters(nodes, config.nodeStyles.area || {}, clusterDefinitions);
+    const areaClusterGroups = buildAreaClusterGroups(conceptData.areaClusters, nodes, config.nodeStyles.area || {});
 
-    let clusterOverlay = createClusterOverlay(container, combinedClusters);
-    if (clusterOverlay) {
-      clusterOverlay.attach(cy);
-      const showForAreaDetail = (config.detailByType && config.detailByType.area) || "extrawide";
-      clusterOverlay.setVisibility(filters.types.has("area") || state.detailLevel === showForAreaDetail);
-      clusterOverlay.sync();
-    }
+    const overlays = {
+      area: areaClusters.length ? createClusterOverlay(container, areaClusters) : null,
+      areaCluster: areaClusterGroups.length ? createClusterOverlay(container, areaClusterGroups) : null
+    };
+    const overlayList = Object.values(overlays).filter(Boolean);
+    overlayList.forEach((overlay) => overlay.attach(cy));
 
     const state = { selectedId: null, detailLevel: currentDetail(cy.zoom()) };
+    const areaOverlay = overlays.area;
+    const areaClusterOverlay = overlays.areaCluster;
     updateZoomReadout();
     applyFilters();
     renderInfo(null);
@@ -319,8 +299,8 @@
 
     cy.on("tap", (evt) => {
       if (evt.target === cy) {
-        if (clusterOverlay && evt.renderedPosition) {
-          const areaHit = clusterOverlay.findAreaAtPoint(evt.renderedPosition);
+        if (areaOverlay && evt.renderedPosition) {
+          const areaHit = areaOverlay.findAreaAtPoint(evt.renderedPosition);
           if (areaHit) {
             setSelected(areaHit);
             return;
@@ -365,12 +345,19 @@
       if (state.selectedId && cy.getElementById(state.selectedId).hasClass("is-hidden")) {
         setSelected(null);
       }
-      if (clusterOverlay) {
+      if (areaOverlay) {
+        const areaDetail = config.detailByType.area || "area";
+        const areaAllowed = detailRank(areaDetail) <= detailRank(state.detailLevel);
+        areaOverlay.setVisibility(filters.types.has("area") && areaAllowed);
+        areaOverlay.setEligibleNodes(overlayEligible);
+        areaOverlay.sync();
+      }
+      if (areaClusterOverlay) {
         const clusterDetail = config.detailByType.areaCluster || "cluster";
         const overlayAllowed = detailRank(clusterDetail) <= detailRank(state.detailLevel);
-        clusterOverlay.setVisibility(filters.types.has("area") && overlayAllowed);
-        clusterOverlay.setEligibleNodes(overlayEligible);
-        clusterOverlay.sync();
+        areaClusterOverlay.setVisibility(filters.types.has("areaCluster") && overlayAllowed);
+        areaClusterOverlay.setEligibleNodes(overlayEligible);
+        areaClusterOverlay.sync();
       }
     }
 
@@ -389,9 +376,9 @@
         }
       }
       const selectedNode = id ? nodesById.get(id) : null;
-      if (clusterOverlay) {
+      if (areaOverlay) {
         const targetArea = selectedNode?.type === "area" ? selectedNode.id : selectedNode?.areaId;
-        clusterOverlay.setSelection(targetArea || null);
+        areaOverlay.setSelection(targetArea || null);
       }
       renderInfo(selectedNode || null);
     }
@@ -454,16 +441,16 @@
       const neigh = el.closedNeighborhood();
       neigh.nodes().addClass("is-linked");
       neigh.edges().addClass("is-linked");
-      if (clusterOverlay) {
+      if (areaOverlay) {
         const nodeData = nodesById.get(el.id());
         const hoverArea = nodeData?.type === "area" ? nodeData.id : nodeData?.areaId;
-        clusterOverlay.setHover(hoverArea || null);
+        areaOverlay.setHover(hoverArea || null);
       }
     }
 
     function clearHover() {
       cy.elements().removeClass("is-focused is-linked");
-      clusterOverlay?.setHover(null);
+      areaOverlay?.setHover(null);
     }
 
     function updateZoomReadout() {
@@ -471,7 +458,7 @@
       zoomReadout.textContent = `${Math.round(cy.zoom() * 100)}%`;
     }
 
-    return { cy, clusterOverlay };
+    return { cy, clusterOverlays: overlayList };
   }
 
   function initFilters(nodes, filters, typeFilterEl, expertiseFilterEl, expertiseOrder, onChange) {
@@ -485,6 +472,7 @@
 
     if (typeFilterEl) {
       createChips(typeFilterEl, [
+        { key: "areaCluster", label: "Area clusters" },
         { key: "area", label: "Areas" },
         { key: "topic", label: "Topics" },
         { key: "educationalGoal", label: "Educational goals" },
@@ -693,6 +681,36 @@
       }
     });
     return Array.from(clusters.values());
+  }
+
+  function buildAreaClusterGroups(areaClusters = [], nodes = [], areaStyle = {}) {
+    if (!Array.isArray(areaClusters) || !areaClusters.length) {
+      return [];
+    }
+    const nodeList = Array.isArray(nodes) ? nodes : [];
+    const clusters = [];
+    areaClusters.forEach((cluster) => {
+      const nodeIdsSet = new Set();
+      (cluster.areaIds || []).forEach((areaId) => {
+        nodeList.forEach((node) => {
+          if (node.id === areaId || node.areaId === areaId) {
+            nodeIdsSet.add(node.id);
+          }
+        });
+        nodeIdsSet.add(areaId);
+      });
+      if (nodeIdsSet.size) {
+        clusters.push({
+          id: cluster.id || Array.from(nodeIdsSet).join("-"),
+          label: cluster.label || cluster.id || "Area cluster",
+          nodeIds: Array.from(nodeIdsSet),
+          stroke: cluster.stroke || areaStyle.border || areaStyle.color || "#9bb7ff",
+          fill: cluster.fill || areaStyle.fill || "rgba(155, 183, 255, 0.08)",
+          padding: cluster.padding ?? 110
+        });
+      }
+    });
+    return clusters;
   }
 
   function createClusterOverlay(container, clusters = []) {
