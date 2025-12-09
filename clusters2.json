@@ -1,0 +1,1036 @@
+{
+  "metadata": {
+    "version": "2.1",
+    "locale": "cs",
+    "created": "2025-12-02T17:40:00Z",
+    "description": "Extended example with curriculum areas, clusters and area clusters"
+  },
+  "nodes": [
+    {
+      "id": "area_1",
+      "type": "area",
+      "label": "Mediální gramotnost",
+      "description": "Schopnost kriticky analyzovat a vytvářet mediální obsah.",
+      "discipline": "Media Literacy",
+      "order": 1
+    },
+    {
+      "id": "area_2",
+      "type": "area",
+      "label": "Digitální občanství",
+      "description": "Odpovědné a etické chování v digitálním prostředí.",
+      "discipline": "Digital Citizenship",
+      "order": 2
+    },
+    {
+      "id": "area_3",
+      "type": "area",
+      "label": "Informační gramotnost",
+      "description": "Vyhledávání, hodnocení a využití informací.",
+      "discipline": "Information Literacy",
+      "order": 3
+    },
+    {
+      "id": "area_4",
+      "type": "area",
+      "label": "Digitální wellbeing",
+      "description": "Zdravé a udržitelné používání digitálních technologií.",
+      "discipline": "Digital Wellbeing",
+      "order": 4
+    },
+    {
+      "id": "area_5",
+      "type": "area",
+      "label": "Tvořivost a digitální produkce",
+      "description": "Tvorba a sdílení vlastního digitálního obsahu.",
+      "discipline": "Creative Digital Production",
+      "order": 5
+    },
+    {
+      "id": "topic_1",
+      "type": "topic",
+      "label": "Manipulace v médiích",
+      "description": "Rozpoznávání manipulativních technik.",
+      "level": "intermediate",
+      "order": 1
+    },
+    {
+      "id": "topic_2",
+      "type": "topic",
+      "label": "Kritické myšlení",
+      "description": "Rozvoj analytických schopností.",
+      "level": "intermediate",
+      "order": 2
+    },
+    {
+      "id": "topic_3",
+      "type": "topic",
+      "label": "Online bezpečnost",
+      "description": "Ochrana osobních údajů a soukromí.",
+      "level": "foundational",
+      "order": 3
+    },
+    {
+      "id": "topic_4",
+      "type": "topic",
+      "label": "Kyberšikana",
+      "description": "Prevence a řešení kyberšikany.",
+      "level": "foundational",
+      "order": 4
+    },
+    {
+      "id": "topic_5",
+      "type": "topic",
+      "label": "Vyhledávání informací",
+      "description": "Efektivní strategie vyhledávání.",
+      "level": "intermediate",
+      "order": 5
+    },
+    {
+      "id": "topic_6",
+      "type": "topic",
+      "label": "Ověřování zdrojů",
+      "description": "Hodnocení věrohodnosti informací.",
+      "level": "advanced",
+      "order": 6
+    },
+    {
+      "id": "topic_7",
+      "type": "topic",
+      "label": "Zdravé digitální návyky",
+      "description": "Vytváření udržitelných návyků používání technologií.",
+      "level": "foundational",
+      "order": 7
+    },
+    {
+      "id": "topic_8",
+      "type": "topic",
+      "label": "Rovnováha online/offline",
+      "description": "Hledání rovnováhy mezi digitálním a nedigitálním světem.",
+      "level": "intermediate",
+      "order": 8
+    },
+    {
+      "id": "topic_9",
+      "type": "topic",
+      "label": "Tvorba multimediálního obsahu",
+      "description": "Plánování, tvorba a úprava multimediálních výstupů.",
+      "level": "intermediate",
+      "order": 9
+    },
+    {
+      "id": "topic_10",
+      "type": "topic",
+      "label": "Autorské právo a licence",
+      "description": "Základy autorského práva a otevřených licencí.",
+      "level": "advanced",
+      "order": 10
+    },
+    {
+      "id": "edu_goal_1",
+      "type": "educationalGoal",
+      "label": "Rozpoznat manipulační taktiky",
+      "description": "Identifikace clickbaitu a dezinformací.",
+      "bloomsLevel": "Evaluate"
+    },
+    {
+      "id": "edu_goal_2",
+      "type": "educationalGoal",
+      "label": "Aplikovat kritické myšlení",
+      "description": "Hodnocení argumentů a důkazů.",
+      "bloomsLevel": "Apply"
+    },
+    {
+      "id": "edu_goal_3",
+      "type": "educationalGoal",
+      "label": "Chránit osobní údaje",
+      "description": "Bezpečné sdílení informací online.",
+      "bloomsLevel": "Apply"
+    },
+    {
+      "id": "edu_goal_4",
+      "type": "educationalGoal",
+      "label": "Reagovat na kyberšikanu",
+      "description": "Rozpoznání a hlášení kyberšikany.",
+      "bloomsLevel": "Understand"
+    },
+    {
+      "id": "edu_goal_5",
+      "type": "educationalGoal",
+      "label": "Efektivně vyhledávat",
+      "description": "Pokročilé vyhledávací operátory.",
+      "bloomsLevel": "Apply"
+    },
+    {
+      "id": "edu_goal_6",
+      "type": "educationalGoal",
+      "label": "Ověřovat věrohodnost",
+      "description": "Systematické hodnocení zdrojů.",
+      "bloomsLevel": "Evaluate"
+    },
+    {
+      "id": "edu_goal_7",
+      "type": "educationalGoal",
+      "label": "Udržovat zdravé digitální návyky",
+      "description": "Plánování a reflektování vlastního času u obrazovky.",
+      "bloomsLevel": "Apply"
+    },
+    {
+      "id": "edu_goal_8",
+      "type": "educationalGoal",
+      "label": "Vyvažovat online a offline aktivity",
+      "description": "Vědomé vyhledávání aktivit mimo online prostředí.",
+      "bloomsLevel": "Analyze"
+    },
+    {
+      "id": "edu_goal_9",
+      "type": "educationalGoal",
+      "label": "Vytvářet kvalitní multimediální obsah",
+      "description": "Návrh a realizace multimediálního projektu.",
+      "bloomsLevel": "Create"
+    },
+    {
+      "id": "edu_goal_10",
+      "type": "educationalGoal",
+      "label": "Respektovat autorské právo",
+      "description": "Používání licencovaného a otevřeného obsahu.",
+      "bloomsLevel": "Evaluate"
+    },
+    {
+      "id": "atomic_goal_1",
+      "type": "atomicGoal",
+      "label": "Rozpoznat clickbait",
+      "fullText": "Žák identifikuje clickbaitové titulky.",
+      "expertise": "B1",
+      "bloomsLevel": "Understand",
+      "sequence": 1
+    },
+    {
+      "id": "atomic_goal_2",
+      "type": "atomicGoal",
+      "label": "Analyzovat argumenty",
+      "fullText": "Žák vyhodnotí logickou strukturu argumentace.",
+      "expertise": "B2",
+      "bloomsLevel": "Analyze",
+      "sequence": 2
+    },
+    {
+      "id": "atomic_goal_3",
+      "type": "atomicGoal",
+      "label": "Nastavit soukromí",
+      "fullText": "Žák nakonfiguruje nastavení soukromí na sociálních sítích.",
+      "expertise": "A2",
+      "bloomsLevel": "Apply",
+      "sequence": 3
+    },
+    {
+      "id": "atomic_goal_4",
+      "type": "atomicGoal",
+      "label": "Rozpoznat kyberšikanu",
+      "fullText": "Žák identifikuje znaky kyberšikany.",
+      "expertise": "A2",
+      "bloomsLevel": "Understand",
+      "sequence": 4
+    },
+    {
+      "id": "atomic_goal_5",
+      "type": "atomicGoal",
+      "label": "Použít pokročilé operátory",
+      "fullText": "Žák aplikuje booleovské operátory při vyhledávání.",
+      "expertise": "B1",
+      "bloomsLevel": "Apply",
+      "sequence": 5
+    },
+    {
+      "id": "atomic_goal_6",
+      "type": "atomicGoal",
+      "label": "Ověřit zdroj",
+      "fullText": "Žák vyhodnotí věrohodnost online zdroje.",
+      "expertise": "B2",
+      "bloomsLevel": "Evaluate",
+      "sequence": 6
+    },
+    {
+      "id": "atomic_goal_7",
+      "type": "atomicGoal",
+      "label": "Naplánovat čas u obrazovky",
+      "fullText": "Žák si vytvoří jednoduchý plán času stráveného online.",
+      "expertise": "A2",
+      "bloomsLevel": "Apply",
+      "sequence": 7
+    },
+    {
+      "id": "atomic_goal_8",
+      "type": "atomicGoal",
+      "label": "Reflektovat vlastní digitální návyky",
+      "fullText": "Žák zhodnotí, které digitální aktivity mu prospívají a které ne.",
+      "expertise": "B1",
+      "bloomsLevel": "Analyze",
+      "sequence": 8
+    },
+    {
+      "id": "atomic_goal_9",
+      "type": "atomicGoal",
+      "label": "Navrhnout multimediální příběh",
+      "fullText": "Žák připraví scénář pro jednoduchý multimediální příběh.",
+      "expertise": "B1",
+      "bloomsLevel": "Create",
+      "sequence": 9
+    },
+    {
+      "id": "atomic_goal_10",
+      "type": "atomicGoal",
+      "label": "Použít vhodnou licenci",
+      "fullText": "Žák zvolí vhodnou licenci pro svůj digitální výtvor.",
+      "expertise": "B2",
+      "bloomsLevel": "Evaluate",
+      "sequence": 10
+    },
+    {
+      "id": "term_1",
+      "type": "term",
+      "label": "Clickbait",
+      "definition": "Návnadový titulek pro maximalizaci prokliků.",
+      "category": "conceptual",
+      "language": "cs"
+    },
+    {
+      "id": "term_2",
+      "type": "term",
+      "label": "Argument",
+      "definition": "Tvrzení podpořené důkazy a logickým zdůvodněním.",
+      "category": "conceptual",
+      "language": "cs"
+    },
+    {
+      "id": "term_3",
+      "type": "term",
+      "label": "Soukromí",
+      "definition": "Právo kontrolovat přístup k osobním informacím.",
+      "category": "conceptual",
+      "language": "cs"
+    },
+    {
+      "id": "term_4",
+      "type": "term",
+      "label": "Kyberšikana",
+      "definition": "Opakované záměrné ubližování prostřednictvím digitálních technologií.",
+      "category": "conceptual",
+      "language": "cs"
+    },
+    {
+      "id": "term_5",
+      "type": "term",
+      "label": "Booleovské operátory",
+      "definition": "Logické příkazy (AND, OR, NOT) pro zpřesnění vyhledávání.",
+      "category": "procedural",
+      "language": "cs"
+    },
+    {
+      "id": "term_6",
+      "type": "term",
+      "label": "Věrohodnost",
+      "definition": "Míra důvěryhodnosti informačního zdroje.",
+      "category": "conceptual",
+      "language": "cs"
+    },
+    {
+      "id": "term_7",
+      "type": "term",
+      "label": "Digitální wellbeing",
+      "definition": "Celková kvalita života ve vztahu k používání digitálních technologií.",
+      "category": "conceptual",
+      "language": "cs"
+    },
+    {
+      "id": "term_8",
+      "type": "term",
+      "label": "Time management",
+      "definition": "Plánování a organizace času.",
+      "category": "procedural",
+      "language": "cs"
+    },
+    {
+      "id": "term_9",
+      "type": "term",
+      "label": "Creative Commons",
+      "definition": "Sada licencí umožňujících sdílení a úpravu obsahu.",
+      "category": "conceptual",
+      "language": "cs"
+    },
+    {
+      "id": "term_10",
+      "type": "term",
+      "label": "Remix",
+      "definition": "Nové dílo vytvořené úpravou či kombinací existujícího obsahu.",
+      "category": "conceptual",
+      "language": "cs"
+    },
+    {
+      "id": "activity_1",
+      "type": "activity",
+      "label": "Clickbait quiz",
+      "activityType": "question",
+      "difficulty": "medium",
+      "estimatedDuration": 300
+    },
+    {
+      "id": "activity_2",
+      "type": "activity",
+      "label": "Analýza argumentů",
+      "activityType": "question",
+      "difficulty": "hard",
+      "estimatedDuration": 600
+    },
+    {
+      "id": "activity_3",
+      "type": "activity",
+      "label": "Nastavení soukromí - úkol",
+      "activityType": "question",
+      "difficulty": "easy",
+      "estimatedDuration": 450
+    },
+    {
+      "id": "activity_4",
+      "type": "activity",
+      "label": "Scénáře kyberšikany",
+      "activityType": "question",
+      "difficulty": "medium",
+      "estimatedDuration": 400
+    },
+    {
+      "id": "activity_5",
+      "type": "activity",
+      "label": "Vyhledávací výzva",
+      "activityType": "question",
+      "difficulty": "medium",
+      "estimatedDuration": 500
+    },
+    {
+      "id": "activity_6",
+      "type": "activity",
+      "label": "Hodnocení zdrojů",
+      "activityType": "question",
+      "difficulty": "hard",
+      "estimatedDuration": 900
+    },
+    {
+      "id": "activity_7",
+      "type": "activity",
+      "label": "Digitální deník",
+      "activityType": "reflection",
+      "difficulty": "easy",
+      "estimatedDuration": 600
+    },
+    {
+      "id": "activity_8",
+      "type": "activity",
+      "label": "Týden bez telefonu po 21:00",
+      "activityType": "project",
+      "difficulty": "medium",
+      "estimatedDuration": 1800
+    },
+    {
+      "id": "activity_9",
+      "type": "activity",
+      "label": "Storyboard multimediálního příběhu",
+      "activityType": "project",
+      "difficulty": "medium",
+      "estimatedDuration": 1200
+    },
+    {
+      "id": "activity_10",
+      "type": "activity",
+      "label": "Licencování digitálního díla",
+      "activityType": "question",
+      "difficulty": "hard",
+      "estimatedDuration": 900
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_area1_topic1",
+      "type": "agregates",
+      "source": "area_1",
+      "target": "topic_1"
+    },
+    {
+      "id": "edge_area1_topic2",
+      "type": "agregates",
+      "source": "area_1",
+      "target": "topic_2"
+    },
+    {
+      "id": "edge_area2_topic3",
+      "type": "agregates",
+      "source": "area_2",
+      "target": "topic_3"
+    },
+    {
+      "id": "edge_area2_topic4",
+      "type": "agregates",
+      "source": "area_2",
+      "target": "topic_4"
+    },
+    {
+      "id": "edge_area3_topic5",
+      "type": "agregates",
+      "source": "area_3",
+      "target": "topic_5"
+    },
+    {
+      "id": "edge_area3_topic6",
+      "type": "agregates",
+      "source": "area_3",
+      "target": "topic_6"
+    },
+    {
+      "id": "edge_area4_topic7",
+      "type": "agregates",
+      "source": "area_4",
+      "target": "topic_7"
+    },
+    {
+      "id": "edge_area4_topic8",
+      "type": "agregates",
+      "source": "area_4",
+      "target": "topic_8"
+    },
+    {
+      "id": "edge_area5_topic9",
+      "type": "agregates",
+      "source": "area_5",
+      "target": "topic_9"
+    },
+    {
+      "id": "edge_area5_topic10",
+      "type": "agregates",
+      "source": "area_5",
+      "target": "topic_10"
+    },
+    {
+      "id": "edge_topic1_edugoal1",
+      "type": "contains",
+      "source": "topic_1",
+      "target": "edu_goal_1"
+    },
+    {
+      "id": "edge_topic2_edugoal2",
+      "type": "contains",
+      "source": "topic_2",
+      "target": "edu_goal_2"
+    },
+    {
+      "id": "edge_topic3_edugoal3",
+      "type": "contains",
+      "source": "topic_3",
+      "target": "edu_goal_3"
+    },
+    {
+      "id": "edge_topic4_edugoal4",
+      "type": "contains",
+      "source": "topic_4",
+      "target": "edu_goal_4"
+    },
+    {
+      "id": "edge_topic5_edugoal5",
+      "type": "contains",
+      "source": "topic_5",
+      "target": "edu_goal_5"
+    },
+    {
+      "id": "edge_topic6_edugoal6",
+      "type": "contains",
+      "source": "topic_6",
+      "target": "edu_goal_6"
+    },
+    {
+      "id": "edge_topic7_edugoal7",
+      "type": "contains",
+      "source": "topic_7",
+      "target": "edu_goal_7"
+    },
+    {
+      "id": "edge_topic8_edugoal8",
+      "type": "contains",
+      "source": "topic_8",
+      "target": "edu_goal_8"
+    },
+    {
+      "id": "edge_topic9_edugoal9",
+      "type": "contains",
+      "source": "topic_9",
+      "target": "edu_goal_9"
+    },
+    {
+      "id": "edge_topic10_edugoal10",
+      "type": "contains",
+      "source": "topic_10",
+      "target": "edu_goal_10"
+    },
+    {
+      "id": "edge_edugoal1_atomicgoal1",
+      "type": "contains",
+      "source": "edu_goal_1",
+      "target": "atomic_goal_1"
+    },
+    {
+      "id": "edge_edugoal2_atomicgoal2",
+      "type": "contains",
+      "source": "edu_goal_2",
+      "target": "atomic_goal_2"
+    },
+    {
+      "id": "edge_edugoal3_atomicgoal3",
+      "type": "contains",
+      "source": "edu_goal_3",
+      "target": "atomic_goal_3"
+    },
+    {
+      "id": "edge_edugoal4_atomicgoal4",
+      "type": "contains",
+      "source": "edu_goal_4",
+      "target": "atomic_goal_4"
+    },
+    {
+      "id": "edge_edugoal5_atomicgoal5",
+      "type": "contains",
+      "source": "edu_goal_5",
+      "target": "atomic_goal_5"
+    },
+    {
+      "id": "edge_edugoal6_atomicgoal6",
+      "type": "contains",
+      "source": "edu_goal_6",
+      "target": "atomic_goal_6"
+    },
+    {
+      "id": "edge_edugoal7_atomicgoal7",
+      "type": "contains",
+      "source": "edu_goal_7",
+      "target": "atomic_goal_7"
+    },
+    {
+      "id": "edge_edugoal8_atomicgoal8",
+      "type": "contains",
+      "source": "edu_goal_8",
+      "target": "atomic_goal_8"
+    },
+    {
+      "id": "edge_edugoal9_atomicgoal9",
+      "type": "contains",
+      "source": "edu_goal_9",
+      "target": "atomic_goal_9"
+    },
+    {
+      "id": "edge_edugoal10_atomicgoal10",
+      "type": "contains",
+      "source": "edu_goal_10",
+      "target": "atomic_goal_10"
+    },
+    {
+      "id": "edge_atomicgoal1_term1",
+      "type": "requires",
+      "source": "atomic_goal_1",
+      "target": "term_1"
+    },
+    {
+      "id": "edge_atomicgoal2_term2",
+      "type": "requires",
+      "source": "atomic_goal_2",
+      "target": "term_2"
+    },
+    {
+      "id": "edge_atomicgoal3_term3",
+      "type": "requires",
+      "source": "atomic_goal_3",
+      "target": "term_3"
+    },
+    {
+      "id": "edge_atomicgoal4_term4",
+      "type": "requires",
+      "source": "atomic_goal_4",
+      "target": "term_4"
+    },
+    {
+      "id": "edge_atomicgoal5_term5",
+      "type": "requires",
+      "source": "atomic_goal_5",
+      "target": "term_5"
+    },
+    {
+      "id": "edge_atomicgoal6_term6",
+      "type": "requires",
+      "source": "atomic_goal_6",
+      "target": "term_6"
+    },
+    {
+      "id": "edge_atomicgoal7_term7",
+      "type": "requires",
+      "source": "atomic_goal_7",
+      "target": "term_7"
+    },
+    {
+      "id": "edge_atomicgoal7_term8",
+      "type": "requires",
+      "source": "atomic_goal_7",
+      "target": "term_8"
+    },
+    {
+      "id": "edge_atomicgoal8_term7",
+      "type": "requires",
+      "source": "atomic_goal_8",
+      "target": "term_7"
+    },
+    {
+      "id": "edge_atomicgoal9_term9",
+      "type": "requires",
+      "source": "atomic_goal_9",
+      "target": "term_9"
+    },
+    {
+      "id": "edge_atomicgoal10_term9",
+      "type": "requires",
+      "source": "atomic_goal_10",
+      "target": "term_9"
+    },
+    {
+      "id": "edge_atomicgoal10_term10",
+      "type": "requires",
+      "source": "atomic_goal_10",
+      "target": "term_10"
+    },
+    {
+      "id": "edge_atomicgoal1_activity1",
+      "type": "validatedBy",
+      "source": "atomic_goal_1",
+      "target": "activity_1"
+    },
+    {
+      "id": "edge_atomicgoal2_activity2",
+      "type": "validatedBy",
+      "source": "atomic_goal_2",
+      "target": "activity_2"
+    },
+    {
+      "id": "edge_atomicgoal3_activity3",
+      "type": "validatedBy",
+      "source": "atomic_goal_3",
+      "target": "activity_3"
+    },
+    {
+      "id": "edge_atomicgoal4_activity4",
+      "type": "validatedBy",
+      "source": "atomic_goal_4",
+      "target": "activity_4"
+    },
+    {
+      "id": "edge_atomicgoal5_activity5",
+      "type": "validatedBy",
+      "source": "atomic_goal_5",
+      "target": "activity_5"
+    },
+    {
+      "id": "edge_atomicgoal6_activity6",
+      "type": "validatedBy",
+      "source": "atomic_goal_6",
+      "target": "activity_6"
+    },
+    {
+      "id": "edge_atomicgoal7_activity7",
+      "type": "validatedBy",
+      "source": "atomic_goal_7",
+      "target": "activity_7"
+    },
+    {
+      "id": "edge_atomicgoal8_activity8",
+      "type": "validatedBy",
+      "source": "atomic_goal_8",
+      "target": "activity_8"
+    },
+    {
+      "id": "edge_atomicgoal9_activity9",
+      "type": "validatedBy",
+      "source": "atomic_goal_9",
+      "target": "activity_9"
+    },
+    {
+      "id": "edge_atomicgoal10_activity10",
+      "type": "validatedBy",
+      "source": "atomic_goal_10",
+      "target": "activity_10"
+    },
+    {
+      "id": "edge_atomicgoal2_requires_atomicgoal1",
+      "type": "requires",
+      "source": "atomic_goal_2",
+      "target": "atomic_goal_1",
+      "metadata": {
+        "justification": "Analýza argumentů vyžaduje schopnost rozpoznat manipulaci"
+      }
+    },
+    {
+      "id": "edge_atomicgoal6_requires_atomicgoal5",
+      "type": "requires",
+      "source": "atomic_goal_6",
+      "target": "atomic_goal_5",
+      "metadata": {
+        "justification": "Ověřování zdrojů vyžaduje schopnost efektivně vyhledávat"
+      }
+    },
+    {
+      "id": "edge_atomicgoal8_requires_atomicgoal7",
+      "type": "requires",
+      "source": "atomic_goal_8",
+      "target": "atomic_goal_7",
+      "metadata": {
+        "justification": "Reflexe návyků vyžaduje jejich základní plánování"
+      }
+    },
+    {
+      "id": "edge_atomicgoal10_requires_atomicgoal9",
+      "type": "requires",
+      "source": "atomic_goal_10",
+      "target": "atomic_goal_9",
+      "metadata": {
+        "justification": "Volba licence navazuje na tvorbu samotného díla"
+      }
+    },
+    {
+      "id": "edge_edugoal2_requires_edugoal1",
+      "type": "requires",
+      "source": "edu_goal_2",
+      "target": "edu_goal_1",
+      "metadata": {
+        "justification": "Kritické myšlení vyžaduje rozpoznání manipulace"
+      }
+    },
+    {
+      "id": "edge_edugoal6_requires_edugoal5",
+      "type": "requires",
+      "source": "edu_goal_6",
+      "target": "edu_goal_5",
+      "metadata": {
+        "justification": "Ověřování vyžaduje vyhledávací dovednosti"
+      }
+    },
+    {
+      "id": "edge_edugoal8_requires_edugoal7",
+      "type": "requires",
+      "source": "edu_goal_8",
+      "target": "edu_goal_7",
+      "metadata": {
+        "justification": "Vyvažování online/offline vychází ze základů digitálního wellbeing"
+      }
+    },
+    {
+      "id": "edge_edugoal10_requires_edugoal9",
+      "type": "requires",
+      "source": "edu_goal_10",
+      "target": "edu_goal_9",
+      "metadata": {
+        "justification": "Respekt k autorskému právu se váže k vlastní tvorbě"
+      }
+    },
+    {
+      "id": "edge_topic1_relates_topic2",
+      "type": "relatesTo",
+      "source": "topic_1",
+      "target": "topic_2",
+      "metadata": {
+        "relationshipType": "complementary"
+      }
+    },
+    {
+      "id": "edge_topic5_relates_topic6",
+      "type": "relatesTo",
+      "source": "topic_5",
+      "target": "topic_6",
+      "metadata": {
+        "relationshipType": "sequential"
+      }
+    },
+    {
+      "id": "edge_topic3_relates_topic7",
+      "type": "relatesTo",
+      "source": "topic_3",
+      "target": "topic_7",
+      "metadata": {
+        "relationshipType": "supportive",
+        "description": "Bezpečnostní návyky jsou součástí digitálního wellbeing"
+      }
+    },
+    {
+      "id": "edge_topic9_relates_topic1",
+      "type": "relatesTo",
+      "source": "topic_9",
+      "target": "topic_1",
+      "metadata": {
+        "relationshipType": "overlapping",
+        "description": "Tvorba obsahu souvisí s chápáním manipulace v médiích"
+      }
+    },
+    {
+      "id": "edge_area1_relates_area3",
+      "type": "relatesTo",
+      "source": "area_1",
+      "target": "area_3",
+      "metadata": {
+        "relationshipType": "overlapping",
+        "description": "Mediální a informační gramotnost se vzájemně překrývají"
+      }
+    },
+    {
+      "id": "edge_area2_relates_area1",
+      "type": "relatesTo",
+      "source": "area_2",
+      "target": "area_1",
+      "metadata": {
+        "relationshipType": "supportive",
+        "description": "Digitální občanství podporuje mediální gramotnost"
+      }
+    },
+    {
+      "id": "edge_area4_relates_area2",
+      "type": "relatesTo",
+      "source": "area_4",
+      "target": "area_2",
+      "metadata": {
+        "relationshipType": "nested",
+        "description": "Digitální wellbeing je součástí odpovědného digitálního občanství"
+      }
+    },
+    {
+      "id": "edge_area5_relates_area1",
+      "type": "relatesTo",
+      "source": "area_5",
+      "target": "area_1",
+      "metadata": {
+        "relationshipType": "overlapping",
+        "description": "Tvořivá produkce rozšiřuje mediální gramotnost o praktickou tvorbu"
+      }
+    }
+  ],
+  "clusters": [
+    {
+      "id": "cluster_area_1",
+      "type": "cluster",
+      "label": "Mediální gramotnost",
+      "areaId": "area_1",
+      "nodes": [
+        "area_1",
+        "topic_1",
+        "topic_2",
+        "edu_goal_1",
+        "edu_goal_2",
+        "atomic_goal_1",
+        "atomic_goal_2",
+        "term_1",
+        "term_2",
+        "activity_1",
+        "activity_2"
+      ]
+    },
+    {
+      "id": "cluster_area_2",
+      "type": "cluster",
+      "label": "Digitální občanství",
+      "areaId": "area_2",
+      "nodes": [
+        "area_2",
+        "topic_3",
+        "topic_4",
+        "edu_goal_3",
+        "edu_goal_4",
+        "atomic_goal_3",
+        "atomic_goal_4",
+        "term_3",
+        "term_4",
+        "activity_3",
+        "activity_4"
+      ]
+    },
+    {
+      "id": "cluster_area_3",
+      "type": "cluster",
+      "label": "Informační gramotnost",
+      "areaId": "area_3",
+      "nodes": [
+        "area_3",
+        "topic_5",
+        "topic_6",
+        "edu_goal_5",
+        "edu_goal_6",
+        "atomic_goal_5",
+        "atomic_goal_6",
+        "term_5",
+        "term_6",
+        "activity_5",
+        "activity_6"
+      ]
+    },
+    {
+      "id": "cluster_area_4",
+      "type": "cluster",
+      "label": "Digitální wellbeing",
+      "areaId": "area_4",
+      "nodes": [
+        "area_4",
+        "topic_7",
+        "topic_8",
+        "edu_goal_7",
+        "edu_goal_8",
+        "atomic_goal_7",
+        "atomic_goal_8",
+        "term_7",
+        "term_8",
+        "activity_7",
+        "activity_8"
+      ]
+    },
+    {
+      "id": "cluster_area_5",
+      "type": "cluster",
+      "label": "Tvořivost a digitální produkce",
+      "areaId": "area_5",
+      "nodes": [
+        "area_5",
+        "topic_9",
+        "topic_10",
+        "edu_goal_9",
+        "edu_goal_10",
+        "atomic_goal_9",
+        "atomic_goal_10",
+        "term_9",
+        "term_10",
+        "activity_9",
+        "activity_10"
+      ]
+    }
+  ],
+  "areaClusters": [
+    {
+      "id": "area_cluster_1",
+      "type": "areaCluster",
+      "label": "Porozumění médiím a informacím",
+      "description": "Sdružuje oblasti mediální a informační gramotnosti a tvořivé digitální produkce.",
+      "areaIds": [
+        "area_1",
+        "area_3",
+        "area_5"
+      ],
+      "order": 1
+    },
+    {
+      "id": "area_cluster_2",
+      "type": "areaCluster",
+      "label": "Bezpečí a digitální wellbeing",
+      "description": "Sdružuje oblast digitálního občanství a digitálního wellbeing.",
+      "areaIds": [
+        "area_2",
+        "area_4"
+      ],
+      "order": 2
+    }
+  ]
+}

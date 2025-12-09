@@ -1,21 +1,72 @@
 ﻿(() => {
   const config = {
-    zoomBreaks: { wide: 0.6, mid: 1.2 },
+    zoomBreaks: {
+      cluster: 0.45,
+      area: 0.7,
+      topic: 1.0,
+      goal: 1.3,
+      detail: 1.65
+    },
     detailByType: {
-      area: "wide",
-      topic: "mid",
-      educationalGoal: "mid",
-      atomicGoal: "close",
-      term: "close",
-      activity: "close"
+      areaCluster: "cluster",
+      area: "area",
+      topic: "topic",
+      educationalGoal: "goal",
+      atomicGoal: "detail",
+      term: "detail",
+      activity: "detail"
     },
     nodeStyles: {
-      area: { color: "#9bb7ff", border: "#9bb7ff", fill: "rgba(155, 183, 255, 0.1)", borderStyle: "dashed", size: 260, shape: "ellipse" },
-      topic: { color: "#8fd3c8", border: "#8fd3c8", fill: "rgba(143, 211, 200, 0.15)", size: 150, shape: "ellipse" },
-      educationalGoal: { color: "#ffb347", border: "#ffb347", size: 110, shape: "ellipse" },
-      atomicGoal: { color: "#a277ff", border: "#a277ff", size: 70, shape: "ellipse" },
-      term: { color: "#7ee0ff", border: "#7ee0ff", size: 60, shape: "diamond" },
-      activity: { color: "#ff7ea9", border: "#ff7ea9", size: 70, shape: "roundrectangle", borderRadius: 16 }
+      area: {
+        color: "#9bb7ff",
+        border: "#9bb7ff",
+        fill: "rgba(155, 183, 255, 0.1)",
+        borderStyle: "dashed",
+        size: 260,
+        shape: "ellipse",
+        labelColor: "#0e0f0fff"
+      },
+      topic: {
+        color: "#8fd3c8",
+        border: "#8fd3c8",
+        fill: "#8fd3c8",
+        size: 150,
+        shape: "ellipse",
+        labelColor: "#181818ff"
+      },
+      educationalGoal: {
+        color: "#ffb347",
+        border: "#ffb347",
+        fill: "#ffb347",
+        size: 110,
+        shape: "ellipse",
+        labelColor: "#000000ff"
+      },
+      atomicGoal: {
+        color: "#a277ff",
+        border: "#a277ff",
+        fill: "#a277ff",
+        size: 70,
+        shape: "ellipse",
+        labelColor: "#0e0025ff"
+      },
+      term: {
+        color: "#7ee0ff",
+        border: "#7ee0ff",
+        fill: "#7ee0ff",
+        size: 60,
+        shape: "diamond",
+        labelColor: "#002028ff"
+      },
+      activity: {
+        color: "#ff7ea9",
+        border: "#ff7ea9",
+        fill: "#ff7ea9",
+        size: 70,
+        shape: "roundrectangle",
+        borderRadius: 16,
+        labelColor: "#120007ff"
+      }
     },
     edgeStyles: {
       validates: { color: "#ff7ea9", width: 3, dash: [6, 6] },
@@ -32,6 +83,7 @@
     },
     datasets: [
       { label: "Clustered curriculum", value: "clusters.json" },
+      { label: "Clustered curriculum 2", value: "clusters2.json" },
       { label: "Simple demo", value: "simpledata.json" },
       { label: "Dataset 1", value: "data1.json" },
       { label: "Dataset 2", value: "data2.json" }
@@ -222,13 +274,35 @@
       boxSelectionEnabled: false
     });
 
-    let clusterOverlay = createClusterOverlay(
-      container,
-      buildAreaClusters(nodes, config.nodeStyles.area || {}, clusterDefinitions)
-    );
+    const baseClusters = buildAreaClusters(nodes, config.nodeStyles.area || {}, clusterDefinitions);
+    const combinedClusters = baseClusters.slice();
+    if (Array.isArray(conceptData.areaClusters) && conceptData.areaClusters.length) {
+      conceptData.areaClusters.forEach((ac) => {
+        const nodeIdsSet = new Set();
+        // include any nodes that belong to the listed areas (area node itself and its member nodes)
+        ac.areaIds.forEach((areaId) => {
+          nodes.forEach((n) => {
+            if (n.id === areaId || n.areaId === areaId) nodeIdsSet.add(n.id);
+          });
+          // include the area node id itself in case it wasn't added
+          nodeIdsSet.add(areaId);
+        });
+        combinedClusters.push({
+          id: ac.id,
+          label: ac.label || ac.id,
+          nodeIds: Array.from(nodeIdsSet),
+          stroke: ac.stroke || config.nodeStyles.area?.border || config.nodeStyles.area?.color || "#9bb7ff",
+          fill: ac.fill || config.nodeStyles.area?.fill || "rgba(155, 183, 255, 0.08)",
+          padding: ac.padding ?? 80
+        });
+      });
+    }
+
+    let clusterOverlay = createClusterOverlay(container, combinedClusters);
     if (clusterOverlay) {
       clusterOverlay.attach(cy);
-      clusterOverlay.setVisibility(filters.types.has("area"));
+      const showForAreaDetail = (config.detailByType && config.detailByType.area) || "extrawide";
+      clusterOverlay.setVisibility(filters.types.has("area") || state.detailLevel === showForAreaDetail);
       clusterOverlay.sync();
     }
 
@@ -292,7 +366,9 @@
         setSelected(null);
       }
       if (clusterOverlay) {
-        clusterOverlay.setVisibility(filters.types.has("area"));
+        const clusterDetail = config.detailByType.areaCluster || "cluster";
+        const overlayAllowed = detailRank(clusterDetail) <= detailRank(state.detailLevel);
+        clusterOverlay.setVisibility(filters.types.has("area") && overlayAllowed);
         clusterOverlay.setEligibleNodes(overlayEligible);
         clusterOverlay.sync();
       }
@@ -970,15 +1046,20 @@
   }
 
   function buildStyles(cfg) {
+    // derive ranking from configured zoomBreaks so code responds to added/removed breaks
+    const rankKeys = Object.keys(cfg.zoomBreaks || {}).sort((a, b) => (cfg.zoomBreaks[a] || 0) - (cfg.zoomBreaks[b] || 0));
+    const maxRank = Math.max(0, rankKeys.length - 1);
+    const fontSizeExpr = `mapData(detailRank, 0, ${maxRank}, 16, 10)`;
+    const textMaxWidthExpr = `mapData(detailRank, 0, ${maxRank}, 220, 90)`;
+
     const baseNode = {
       label: "data(label)",
-      "font-size": "mapData(detailRank, 0, 2, 14, 10)",
+      "font-size": fontSizeExpr,
       "font-family": "Inter, 'Segoe UI', system-ui, -apple-system, sans-serif",
       "text-valign": "center",
       "text-halign": "center",
       "text-wrap": "wrap",
-      "text-max-width": "mapData(detailRank, 0, 2, 200, 110)",
-      color: "#f5f5f5",
+      "text-max-width": textMaxWidthExpr,
       "text-outline-width": 0,
       "background-color": "transparent",
       "border-width": 2,
@@ -995,6 +1076,7 @@
           "background-color": val.fill || "transparent",
           "border-color": val.border,
           "border-style": val.borderStyle || "solid",
+          color: val.labelColor || val.color || "#f5f5f5",
           width: val.size,
           height: val.size,
           shape: val.shape,
@@ -1181,15 +1263,21 @@
   }
 
   function currentDetail(zoom) {
-    if (zoom <= config.zoomBreaks.wide) return "wide";
-    if (zoom <= config.zoomBreaks.mid) return "mid";
-    return "close";
+    const breaks = config.zoomBreaks || {};
+    const entries = Object.entries(breaks).sort((a, b) => a[1] - b[1]);
+    for (const [name, val] of entries) {
+      if (zoom <= val) return name;
+    }
+    // if above all breakpoints, return the last (closest/highest-detail) key
+    return entries.length ? entries[entries.length - 1][0] : "close";
   }
 
   function detailRank(level) {
-    if (level === "wide") return 0;
-    if (level === "mid") return 1;
-    return 2;
+    const breaks = config.zoomBreaks || {};
+    const keys = Object.keys(breaks).sort((a, b) => (breaks[a] || 0) - (breaks[b] || 0));
+    const idx = keys.indexOf(level);
+    if (idx >= 0) return idx;
+    return keys.length ? keys.length - 1 : 2;
   }
 
   function extractLevels(value = "", order) {
