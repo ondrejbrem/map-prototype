@@ -457,6 +457,8 @@
       "type": "requires",
       "source": "atomic_goal_2",
       "target": "atomic_goal_1",
+      "label": "Analyze arguments after spotting manipulation",
+      "description": "Learners first recognize clickbait patterns before tackling full argument analysis.",
       "metadata": {
         "justification": "Analýza argumentů vyžaduje schopnost rozpoznat manipulaci"
       }
@@ -466,6 +468,8 @@
       "type": "requires",
       "source": "atomic_goal_6",
       "target": "atomic_goal_5",
+      "label": "Source checks build on search mastery",
+      "description": "Evaluating credibility depends on efficient information retrieval skills.",
       "metadata": {
         "justification": "Ověřování zdrojů vyžaduje schopnost efektivně vyhledávat"
       }
@@ -475,6 +479,8 @@
       "type": "requires",
       "source": "edu_goal_2",
       "target": "edu_goal_1",
+      "label": "Critical thinking builds on manipulation awareness",
+      "description": "Sequencing ensures students can spot misinformation before evaluating arguments.",
       "metadata": {
         "justification": "Kritické myšlení vyžaduje rozpoznání manipulace"
       }
@@ -484,6 +490,8 @@
       "type": "requires",
       "source": "edu_goal_6",
       "target": "edu_goal_5",
+      "label": "Evaluation follows efficient search",
+      "description": "Sequencing emphasizes that students explore advanced search before credibility checks.",
       "metadata": {
         "justification": "Ověřování vyžaduje vyhledávací dovednosti"
       }
@@ -493,6 +501,9 @@
       "type": "relatesTo",
       "source": "topic_1",
       "target": "topic_2",
+      "label": "Media manipulation & critical thinking",
+      "description": "These topics are reviewed together to emphasize pattern spotting and reasoning.",
+      "direction": "undirected",
       "metadata": {
         "relationshipType": "complementary"
       }
@@ -502,6 +513,9 @@
       "type": "relatesTo",
       "source": "topic_5",
       "target": "topic_6",
+      "label": "Search strategy & verification",
+      "description": "Topic pairing shows how advanced operators support credibility checks.",
+      "direction": "undirected",
       "metadata": {
         "relationshipType": "sequential"
       }
@@ -511,6 +525,9 @@
       "type": "relatesTo",
       "source": "area_1",
       "target": "area_3",
+      "label": "Media & information literacy overlap",
+      "description": "Cross-area initiatives highlight how both disciplines reinforce each other.",
+      "direction": "undirected",
       "metadata": {
         "relationshipType": "overlapping",
         "description": "Mediální a informační gramotnost se vzájemně překrývají"
@@ -521,6 +538,9 @@
       "type": "relatesTo",
       "source": "area_2",
       "target": "area_1",
+      "label": "Digital citizenship supports media literacy",
+      "description": "Shared projects reinforce ethical participation alongside media analysis.",
+      "direction": "undirected",
       "metadata": {
         "relationshipType": "supportive",
         "description": "Digitální občanství podporuje mediální gramotnost"

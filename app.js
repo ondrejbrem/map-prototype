@@ -79,7 +79,7 @@
       contains: { color: "#ffb347", width: 2.5, dash: [2, 2] },
       validatedBy: { color: "#ff7ea9", width: 3, dash: [6, 6] },
       requires: { color: "#a277ff", width: 2.5, dash: [8, 4] },
-      relatesTo: { color: "#8fd3c8", width: 2, dash: [5, 3] }
+      relatesTo: { color: "#8fd3c8", width: 2, dash: [5, 3], directional: false }
     },
     datasets: [
       { label: "Clustered curriculum", value: "clusters.json" },
@@ -91,7 +91,7 @@
     defaultDataset: "clusters.json"
   };
 
-  const runtime = { cy: null, clusterOverlays: [] };
+  const runtime = { cy: null, clusterOverlays: [], edgeTooltip: null };
   const datasetSelectEl = document.getElementById("dataset-select");
   const uploadInputEl = document.getElementById("data-upload");
   const zoomButtons = document.querySelectorAll(".zoom-buttons button");
@@ -198,6 +198,7 @@
     const result = initCytoscape(data);
     runtime.cy = result?.cy || null;
     runtime.clusterOverlays = result?.clusterOverlays || [];
+    runtime.edgeTooltip = result?.edgeTooltip || null;
   }
 
   function teardown() {
@@ -208,6 +209,10 @@
     if (runtime.clusterOverlays?.length) {
       runtime.clusterOverlays.forEach((overlay) => overlay?.destroy?.());
       runtime.clusterOverlays = [];
+    }
+    if (runtime.edgeTooltip) {
+      runtime.edgeTooltip.destroy?.();
+      runtime.edgeTooltip = null;
     }
     const infoPanel = document.getElementById("info-panel");
     if (infoPanel) {
@@ -221,6 +226,8 @@
     const zoomReadout = document.getElementById("zoom-readout");
     const typeFilterEl = document.getElementById("type-filter");
     const expertiseFilterEl = document.getElementById("expertise-filter");
+    const tooltipHost = (container && container.parentElement) || container;
+    const edgeTooltip = createEdgeTooltip(tooltipHost);
     if (!container || !conceptData) {
       console.warn("Missing container or data");
       return;
@@ -244,10 +251,32 @@
           detailRank: detailRank(detailLevel)
         };
       });
-    const edges = (conceptData.edges || []).map((edge) => ({
-      ...edge,
-      relation: edge.type || edge.relation || "related"
-    }));
+    const edges = (conceptData.edges || []).map((edge) => {
+      const relation = edge.type || edge.relation || "related";
+      const styleDefaults = config.edgeStyles[relation] || {};
+      const label = edge.label ?? edge.name ?? edge.metadata?.label ?? edge.metadata?.relationshipType ?? "";
+      const info =
+        edge.info ??
+        edge.description ??
+        edge.metadata?.description ??
+        edge.metadata?.info ??
+        edge.metadata?.justification ??
+        "";
+      const explicitDirectional =
+        normalizeDirectionalValue(edge.directional) ??
+        normalizeDirectionalValue(edge.directed) ??
+        normalizeDirectionalValue(edge.direction) ??
+        normalizeDirectionalValue(edge.metadata?.directional) ??
+        normalizeDirectionalValue(edge.metadata?.direction);
+      const directional = explicitDirectional ?? (styleDefaults.directional ?? true);
+      return {
+        ...edge,
+        relation,
+        label,
+        info,
+        directional
+      };
+    });
     const nodesById = new Map(nodes.map((n) => [n.id, n]));
     assignAreaMembership(nodes, edges, nodesById, clusterDefinitions);
     applyRadialLayout(nodes, edges, nodesById, clusterDefinitions);
@@ -298,6 +327,7 @@
     });
 
     cy.on("tap", (evt) => {
+      edgeTooltip.hide();
       if (evt.target === cy) {
         if (areaOverlay && evt.renderedPosition) {
           const areaHit = areaOverlay.findAreaAtPoint(evt.renderedPosition);
@@ -315,10 +345,27 @@
     });
     cy.on("mouseout", "node", () => clearHover());
 
+    cy.on("mouseover", "edge", (evt) => {
+      const data = evt.target.data();
+      edgeTooltip.show(
+        {
+          label: data.label || data.relation,
+          type: data.relation,
+          info: data.info
+        },
+        evt.renderedPosition
+      );
+    });
+    cy.on("mousemove", "edge", (evt) => edgeTooltip.move(evt.renderedPosition));
+    cy.on("mouseout", "edge", () => edgeTooltip.hide());
+    cy.on("tap", "edge", () => edgeTooltip.hide());
+    cy.on("pan", () => edgeTooltip.hide());
+
     cy.on("zoom", () => {
       state.detailLevel = currentDetail(cy.zoom());
       updateZoomReadout();
       applyFilters();
+      edgeTooltip.hide();
     });
 
     function applyFilters() {
@@ -423,11 +470,15 @@
         h3.textContent = "Connections";
         section.appendChild(h3);
         const list = document.createElement("ul");
-        connections.forEach(({ nodeId, relation }) => {
+        connections.forEach(({ nodeId, relation, label, info: connectionInfo }) => {
           const other = nodesById.get(nodeId);
           if (!other) return;
           const li = document.createElement("li");
-          li.textContent = `${relation}: ${other.label}`;
+          const descriptor = label || relation;
+          li.textContent = `${descriptor}: ${other.label}`;
+          if (connectionInfo) {
+            li.title = connectionInfo;
+          }
           list.appendChild(li);
         });
         section.appendChild(list);
@@ -458,7 +509,7 @@
       zoomReadout.textContent = `${Math.round(cy.zoom() * 100)}%`;
     }
 
-    return { cy, clusterOverlays: overlayList };
+    return { cy, clusterOverlays: overlayList, edgeTooltip };
   }
 
   function initFilters(nodes, filters, typeFilterEl, expertiseFilterEl, expertiseOrder, onChange) {
@@ -527,7 +578,12 @@
     edges.forEach((edge) => {
       [edge.source, edge.target].forEach((id) => {
         if (!map.has(id)) map.set(id, []);
-        map.get(id).push({ nodeId: id === edge.source ? edge.target : edge.source, relation: edge.relation });
+        map.get(id).push({
+          nodeId: id === edge.source ? edge.target : edge.source,
+          relation: edge.relation,
+          label: edge.label || "",
+          info: edge.info || ""
+        });
       });
     });
     return map;
@@ -552,10 +608,26 @@
         classes: [`node-${node.type}`, `detail-${node.detailLevel}`].join(" ")
       };
     });
-    const edgeElements = edges.map((edge) => ({
-      data: { id: edge.id, source: edge.source, target: edge.target, relation: edge.relation },
-      classes: `edge-${edge.relation}`
-    }));
+    const edgeElements = edges.map((edge) => {
+      const classes = [
+        `edge-${edge.relation}`,
+        edge.directional ? "edge-directional" : "edge-nondirectional"
+      ]
+        .filter(Boolean)
+        .join(" ");
+      return {
+        data: {
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          relation: edge.relation,
+          label: edge.label || "",
+          info: edge.info || "",
+          directional: !!edge.directional
+        },
+        classes
+      };
+    });
     return [...nodeElements, ...edgeElements];
   }
 
@@ -1063,6 +1135,69 @@
     };
   }
 
+  function createEdgeTooltip(host) {
+    if (!host) {
+      const noop = () => {};
+      return { show: noop, move: noop, hide: noop, destroy: noop };
+    }
+    const tooltip = document.createElement("div");
+    tooltip.className = "edge-tooltip is-hidden";
+    host.appendChild(tooltip);
+    let lastPosition = null;
+
+    function setPosition(position) {
+      if (!position) return;
+      lastPosition = position;
+      tooltip.style.left = `${position.x}px`;
+      tooltip.style.top = `${position.y}px`;
+    }
+
+    function setContent({ label, type, info }) {
+      tooltip.innerHTML = "";
+      if (label) {
+        const title = document.createElement("div");
+        title.className = "edge-tooltip__title";
+        title.textContent = label;
+        tooltip.appendChild(title);
+      }
+      const typeRow = document.createElement("div");
+      typeRow.className = "edge-tooltip__type";
+      typeRow.textContent = `Type: ${type}`;
+      tooltip.appendChild(typeRow);
+      if (info) {
+        const infoRow = document.createElement("div");
+        infoRow.className = "edge-tooltip__info";
+        infoRow.textContent = info;
+        tooltip.appendChild(infoRow);
+      }
+    }
+
+    return {
+      show(payload, position) {
+        if (!payload) return;
+        setContent(payload);
+        setPosition(position || lastPosition || { x: 0, y: 0 });
+        tooltip.classList.remove("is-hidden");
+      },
+      move(position) {
+        if (tooltip.classList.contains("is-hidden")) return;
+        if (position) {
+          setPosition(position);
+        } else if (lastPosition) {
+          setPosition(lastPosition);
+        }
+      },
+      hide() {
+        if (!tooltip.classList.contains("is-hidden")) {
+          tooltip.classList.add("is-hidden");
+        }
+      },
+      destroy() {
+        tooltip.remove();
+      }
+    };
+  }
+
   function buildStyles(cfg) {
     // derive ranking from configured zoomBreaks so code responds to added/removed breaks
     const rankKeys = Object.keys(cfg.zoomBreaks || {}).sort((a, b) => (cfg.zoomBreaks[a] || 0) - (cfg.zoomBreaks[b] || 0));
@@ -1101,16 +1236,28 @@
           "border-radius": val.borderRadius || 0
         }
       })),
-      { selector: "edge", style: { width: 2, "line-color": "rgba(255,255,255,0.2)", "curve-style": "straight" } },
+      {
+        selector: "edge",
+        style: {
+          width: 2,
+          "line-color": "rgba(255,255,255,0.2)",
+          "curve-style": "straight",
+          "target-arrow-shape": "none",
+          "arrow-scale": 0.8
+        }
+      },
       ...Object.entries(cfg.edgeStyles).map(([rel, val]) => ({
         selector: `.edge-${rel}`,
         style: {
           "line-color": val.color,
           width: val.width,
           "line-style": val.dash ? "dashed" : "solid",
-          "line-dash-pattern": val.dash || []
+          "line-dash-pattern": val.dash || [],
+          "target-arrow-color": val.color
         }
       })),
+      { selector: "edge.edge-directional", style: { "target-arrow-shape": "triangle" } },
+      { selector: "edge.edge-nondirectional", style: { "target-arrow-shape": "none" } },
       { selector: ".is-hidden", style: { display: "none" } },
       { selector: "node.is-selected", style: { "border-width": 4, "border-color": "#fff" } },
       { selector: "node.is-focused", style: { "border-color": "#fff", "border-width": 3 } },
@@ -1369,6 +1516,22 @@
     }
     const matches = normalized.match(/[A-C][1-2]/g);
     return matches || [];
+  }
+
+  function normalizeDirectionalValue(value) {
+    if (typeof value === "boolean") {
+      return value;
+    }
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (["undirected", "nondirectional", "none", "bidirectional"].includes(normalized)) {
+        return false;
+      }
+      if (["directed", "directional", "arrow", "witharrow"].includes(normalized)) {
+        return true;
+      }
+    }
+    return undefined;
   }
 
   function clamp(v, min, max) {
