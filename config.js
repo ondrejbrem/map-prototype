@@ -17,6 +17,15 @@ export const config = {
     activity: "detail"
   },
   nodeStyles: {
+    areaCluster: {
+      color: "#9bb7ff",
+      border: "#9bb7ff",
+      fill: "rgba(155, 183, 255, 0)",
+      borderStyle: "dashed",
+      size: 260,
+      shape: "ellipse",
+      labelColor: "#0e0f0fff"
+    },
     area: {
       color: "#9bb7ff",
       border: "#9bb7ff",
@@ -86,7 +95,8 @@ export const config = {
     { label: "Clustered curriculum 2", value: "clusters2.json" },
     { label: "Simple demo", value: "simpledata.json" },
     { label: "Dataset 1", value: "data1.json" },
-    { label: "Dataset 2", value: "data2.json" }
+    { label: "Dataset 2", value: "data2.json" },
+    { label: "RVP", value: "compiled_schema.json" }
   ],
   defaultDataset: "clusters.json"
 };

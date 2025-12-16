@@ -1,0 +1,618 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "obecneCasti": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "nazev": {
+            "type": "string"
+          },
+          "charakteristika": {
+            "type": "string"
+          },
+          "kod": {
+            "type": "string"
+          },
+          "kapitoly": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nazev": {
+                  "type": "string"
+                },
+                "charakteristika": {
+                  "type": "string"
+                },
+                "povolenyPodkapitoly": {
+                  "type": "boolean"
+                },
+                "podkapitoly": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "nazev": {
+                        "type": "string"
+                      },
+                      "charakteristika": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "zakladniGramotnosti": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "nazev": {
+            "type": "string"
+          },
+          "charakteristika": {
+            "type": "string"
+          },
+          "kod": {
+            "type": "string"
+          },
+          "povolenySlozkyZakladniGramotnosti": {
+            "type": "boolean"
+          },
+          "slozkyZakladniGramotnosti": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nazev": {
+                  "type": "string"
+                },
+                "charakteristika": {
+                  "type": "string"
+                },
+                "kod": {
+                  "type": "string"
+                },
+                "povolenyPodslozkyZakladniGramotnosti": {
+                  "type": "boolean"
+                },
+                "podslozkyZakladniGramotnosti": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "nazev": {
+                        "type": "string"
+                      },
+                      "charakteristika": {
+                        "type": "string"
+                      },
+                      "kod": {
+                        "type": "number"
+                      },
+                      "uzloveBody": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "nazev": {
+                              "type": "string"
+                            },
+                            "kod": {
+                              "type": "string"
+                            },
+                            "ocekavaneVysledkyUceni": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "zneni": {
+                                    "type": "string"
+                                  },
+                                  "kod": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "uzloveBody": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "nazev": {
+                        "type": "string"
+                      },
+                      "kod": {
+                        "type": "string"
+                      },
+                      "ocekavaneVysledkyUceni": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "zneni": {
+                              "type": "string"
+                            },
+                            "kod": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "uzloveBody": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nazev": {
+                  "type": "string"
+                },
+                "kod": {
+                  "type": "string"
+                },
+                "ocekavaneVysledkyUceni": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "zneni": {
+                        "type": "string"
+                      },
+                      "kod": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "klicoveKompetence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "nazev": {
+            "type": "string"
+          },
+          "charakteristika": {
+            "type": "string"
+          },
+          "kod": {
+            "type": "string"
+          },
+          "povolenySlozkyKlicoveKompetence": {
+            "type": "boolean"
+          },
+          "slozkyKlicoveKompetence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nazev": {
+                  "type": "string"
+                },
+                "charakteristika": {
+                  "type": "string"
+                },
+                "kod": {
+                  "type": "string"
+                },
+                "povolenyPodslozkyKlicoveKompetence": {
+                  "type": "boolean"
+                },
+                "podslozkyKlicoveKompetence": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "nazev": {
+                        "type": "string"
+                      },
+                      "charakteristika": {
+                        "type": "string"
+                      },
+                      "kod": {
+                        "type": "number"
+                      },
+                      "uzloveBody": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "nazev": {
+                              "type": "string"
+                            },
+                            "kod": {
+                              "type": "string"
+                            },
+                            "ocekavaneVysledkyUceni": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "zneni": {
+                                    "type": "string"
+                                  },
+                                  "kod": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "uzloveBody": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "nazev": {
+                        "type": "string"
+                      },
+                      "kod": {
+                        "type": "string"
+                      },
+                      "ocekavaneVysledkyUceni": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "zneni": {
+                              "type": "string"
+                            },
+                            "kod": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "uzloveBody": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nazev": {
+                  "type": "string"
+                },
+                "kod": {
+                  "type": "string"
+                },
+                "ocekavaneVysledkyUceni": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "zneni": {
+                        "type": "string"
+                      },
+                      "kod": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "prurezovaTemata": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "nazev": {
+            "type": "string"
+          },
+          "charakteristika": {
+            "type": "string"
+          },
+          "kod": {
+            "type": "string"
+          },
+          "povolenySlozkyPrurezovehoTematu": {
+            "type": "boolean"
+          },
+          "slozkyPrurezovehoTematu": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nazev": {
+                  "type": "string"
+                },
+                "charakteristika": {
+                  "type": "string"
+                },
+                "kod": {
+                  "type": "string"
+                },
+                "povolenyPodslozkyPrurezovehoTematu": {
+                  "type": "boolean"
+                },
+                "podslozkyPrurezovehoTematu": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "nazev": {
+                        "type": "string"
+                      },
+                      "charakteristika": {
+                        "type": "string"
+                      },
+                      "kod": {
+                        "type": "number"
+                      },
+                      "uzloveBody": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "nazev": {
+                              "type": "string"
+                            },
+                            "kod": {
+                              "type": "string"
+                            },
+                            "ocekavaneVysledkyUceni": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "zneni": {
+                                    "type": "string"
+                                  },
+                                  "kod": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "uzloveBody": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "nazev": {
+                        "type": "string"
+                      },
+                      "kod": {
+                        "type": "string"
+                      },
+                      "ocekavaneVysledkyUceni": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "zneni": {
+                              "type": "string"
+                            },
+                            "kod": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "uzloveBody": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nazev": {
+                  "type": "string"
+                },
+                "kod": {
+                  "type": "string"
+                },
+                "ocekavaneVysledkyUceni": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "zneni": {
+                        "type": "string"
+                      },
+                      "kod": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "vzdelavaciOblasti": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "nazev": {
+            "type": "string"
+          },
+          "charakteristika": {
+            "type": "string"
+          },
+          "kod": {
+            "type": "string"
+          },
+          "povolenyVzdelavaciObory": {
+            "type": "boolean"
+          },
+          "vzdelavaciObory": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nazev": {
+                  "type": "string"
+                },
+                "charakteristika": {
+                  "type": "string"
+                },
+                "kod": {
+                  "type": "string"
+                },
+                "povolenyTematickeOkruhy": {
+                  "type": "boolean"
+                },
+                "tematickeOkruhy": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "nazev": {
+                        "type": "string"
+                      },
+                      "charakteristika": {
+                        "type": "string"
+                      },
+                      "kod": {
+                        "type": "number"
+                      },
+                      "uzloveBody": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "nazev": {
+                              "type": "string"
+                            },
+                            "kod": {
+                              "type": "string"
+                            },
+                            "ocekavaneVysledkyUceni": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "zneni": {
+                                    "type": "string"
+                                  },
+                                  "kod": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "uzloveBody": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "nazev": {
+                        "type": "string"
+                      },
+                      "kod": {
+                        "type": "string"
+                      },
+                      "ocekavaneVysledkyUceni": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "zneni": {
+                              "type": "string"
+                            },
+                            "kod": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "uzloveBody": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nazev": {
+                  "type": "string"
+                },
+                "kod": {
+                  "type": "string"
+                },
+                "ocekavaneVysledkyUceni": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "zneni": {
+                        "type": "string"
+                      },
+                      "kod": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
